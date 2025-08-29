@@ -24,15 +24,16 @@ Atualmente suporta extração de:
 - ✅ Parsers BR-DTA (dois layouts):
   - **Clássico**: “Trânsito Aduaneiro – Extrato da Declaração de Trânsito”
   - **Extrato (Dados Gerais)**: inclui bloco *Via de Transporte/Situação*
-- ✅ Fallback automático na CLI (tenta Extrato → Clássico)
+- ✅ Fallback automático (Extrato → Clássico) tanto na **CLI** quanto na **API**
 - ✅ Models e validações com [Pydantic v2](https://docs.pydantic.dev/)
 - ✅ CLI simples via [Typer](https://typer.tiangolo.com/)
+- ✅ API REST com [FastAPI](https://fastapi.tiangolo.com/)
 - ✅ Lint/format/tipos com `ruff`, `black`, `mypy`, `pre-commit`
 - ✅ Testes unitários com `pytest` + cobertura
 - ✅ Versionamento semântico com **Commitizen**
+- ✅ Integração Contínua com **GitHub Actions**
 - 🔜 Exportar múltiplos formatos (`--out`, `--format json|csv`)
 - 🔜 OCR opcional (via **pytesseract**)
-- 🔜 Integração Contínua com **GitHub Actions**
 
 ---
 
@@ -44,6 +45,8 @@ O projeto segue **Clean Architecture / Ports & Adapters**:
 src/ws_docflow/
 ├─ cli/                 # entrada CLI (Typer)
 │  └─ app.py
+├─ api/                 # entrada API (FastAPI)
+│  └─ main.py
 ├─ core/                # regras de negócio / contratos
 │  ├─ domain/           # entidades (Pydantic)
 │  ├─ ports.py          # interfaces (extratores/parsers)
@@ -79,12 +82,75 @@ poetry run ws-docflow --version
 
 ---
 
-## 🖥️ Como rodar
+## 🖥️ Como rodar via CLI
 
 ```bash
 # rodar parser
 poetry run ws-docflow parse caminho/do/arquivo.pdf
 ```
+
+---
+
+## 🖧 API REST
+
+O projeto também expõe uma API com **FastAPI** (`src/ws_docflow/api/main.py`).
+
+### Subir servidor local
+
+```bash
+poetry run uvicorn ws_docflow.api.main:app --reload --port 8000
+```
+
+### Endpoints
+
+- `POST /api/parse`
+  Recebe arquivo PDF (multipart/form-data) → retorna JSON extraído.
+
+  **Exemplo (PowerShell):**
+  ```powershell
+  $form = @{
+    file = Get-Item "C:\caminho\arquivo.pdf"
+  }
+  Invoke-RestMethod -Method Post `
+    -Uri "http://localhost:8000/api/parse" `
+    -Form $form
+  ```
+
+- `POST /api/parse-b64`
+  Recebe JSON com PDF em base64 → retorna JSON extraído.
+
+  **Exemplo de payload:**
+  ```json
+  {
+    "filename": "documento.pdf",
+    "content_base64": "JVBERi0xLjQKJc..."
+  }
+  ```
+
+  **Exemplo (PowerShell):**
+  ```powershell
+  $b = [Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\caminho\arquivo.pdf"))
+  $body = @{ filename = "arquivo.pdf"; content_base64 = $b } | ConvertTo-Json -Depth 5
+  Invoke-RestMethod -Method POST `
+    -Uri "http://localhost:8000/api/parse-b64" `
+    -ContentType "application/json" `
+    -Body $body
+  ```
+
+---
+
+## 🧪 Testes e qualidade
+
+```bash
+# rodar testes
+poetry run pytest -v
+poetry run pytest --cov=ws_docflow --cov-report=term-missing
+
+# rodar lint/format/tipos
+poetry run pre-commit run --all-files
+```
+
+---
 
 ### Exemplo de saída (layout clássico)
 
@@ -160,20 +226,6 @@ poetry run ws-docflow parse caminho/do/arquivo.pdf
 }
 ```
 
----
-
-## 🧪 Testes e qualidade
-
-```bash
-# rodar testes
-poetry run pytest -v
-poetry run pytest --cov=ws_docflow --cov-report=term-missing
-
-# rodar lint/format/tipos
-poetry run pre-commit run --all-files
-```
-
----
 
 ## 📌 Roadmap
 
@@ -182,7 +234,6 @@ poetry run pre-commit run --all-files
 - [ ] Logs coloridos com **rich**
 - [ ] OCR com fallback pytesseract
 - [ ] Fixtures com PDFs mascarados
-- [ ] CI (Ruff, Black, Mypy, Pytest, cobertura)
 
 ---
 
@@ -207,5 +258,3 @@ poetry run pre-commit run --all-files
 - Versionamento semântico com **Commitizen**
 - Histórico no [CHANGELOG.md](CHANGELOG.md)
 - Tags no formato `vX.Y.Z`
-
----
