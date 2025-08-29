@@ -35,20 +35,26 @@ jobs:
             ~/.cache/pip
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install dependencies
+      - name: Install dependencies (project included)
         run: |
-          poetry install --no-interaction --no-root
+          poetry install --no-interaction
           poetry run pre-commit install
 
       - name: Lint & Format (check-only)
+        env:
+          PYTHONPATH: src
         run: |
           poetry run ruff check .
           poetry run black --check .
 
       - name: Type check (mypy)
+        env:
+          PYTHONPATH: src
         run: poetry run mypy src
 
       - name: Run tests with coverage
+        env:
+          PYTHONPATH: src
         run: |
           poetry run pytest -q \
             --cov=ws_docflow \
