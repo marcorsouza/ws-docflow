@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+from ws_docflow.core.domain.models import DeclaracaoInfo
 from ws_docflow.core.domain.models import (
     UnidadeLocal,
     RecintoAduaneiro,
@@ -57,7 +58,12 @@ def test_documento_dados_valido():
             "0923201 - TRANSCONTINENTAL LOGÍSTICA_S.A"
         ),
     )
-    doc = DocumentoDados(origem=origem, destino=destino)
+    doc = DocumentoDados(
+        declaracao=DeclaracaoInfo(numero="2401250020", tipo="DTA - ENTRADA COMUM"),
+        situacao_atual="",
+        origem=origem,
+        destino=destino,
+    )
     assert doc.origem.unidade_local.codigo == "1017700"
     assert doc.destino.recinto_aduaneiro.codigo == "0923201"
 
