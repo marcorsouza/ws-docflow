@@ -38,7 +38,6 @@ jobs:
       - name: Install dependencies (project included)
         run: |
           poetry install --no-interaction
-          poetry run pre-commit install
 
       - name: Lint & Format (check-only)
         env:
