@@ -56,7 +56,7 @@ src/ws_docflow/
 git clone https://github.com/marcorsouza/ws-docflow.git
 cd ws-docflow
 
-# 2. Configurar Python 3.13
+# 2. Configurar Python 3.13 (ou >=3.10,<4.0 se já flexibilizado)
 pyenv install 3.13.0
 pyenv local 3.13.0
 
@@ -155,6 +155,83 @@ poetry run pre-commit run --all-files
 - Versionamento semântico com **Commitizen**
 - Histórico no [CHANGELOG.md](CHANGELOG.md)
 - Tags no formato `vX.Y.Z`
+
+---
+
+## 🔖 Releases & Tags (Commitizen + Git)
+
+### Fluxo recomendado (automático, com changelog)
+```bash
+# sempre versionar a partir da main atualizada
+git checkout main
+git pull origin main
+
+# checagens rápidas (opcional, mas recomendado)
+poetry run pre-commit run --all-files
+poetry run pytest -q
+
+# gerar versão + tag anotada + CHANGELOG
+# (troque patch por minor/major quando fizer sentido)
+poetry run cz bump --yes --increment patch --changelog
+
+# enviar commit e tags
+git push origin main --tags
+```
+
+> Padrão de tags: `vX.Y.Z` (configurado em `[tool.commitizen] tag_format = "v$version"`).
+> Use **tags anotadas** (com `-a`) — é isso que o Commitizen usa para montar o changelog.
+
+---
+
+### Alternativa manual (se precisar taggear “na mão”)
+```bash
+# descobrir o SHA do commit que você quer taggear
+git log --oneline --decorate -n 10
+
+# criar tag ANOTADA no SHA correto
+git tag -a vX.Y.Z <SHA> -m "Release vX.Y.Z"
+
+# enviar a tag
+git push origin vX.Y.Z
+
+# gerar/atualizar o changelog
+poetry run cz changelog --incremental
+git add CHANGELOG.md
+git commit -m "docs(changelog): gerar changelog para vX.Y.Z"
+git push origin main
+```
+> No Windows/PowerShell, **não use** `<SHA>` literal — troque pelo hash real (ex.: `688d8c1`).
+
+---
+
+### Corrigir tag criada no commit errado (retag)
+```bash
+# ver onde a tag aponta hoje
+git show --summary vX.Y.Z
+
+# deletar local e remoto
+git tag -d vX.Y.Z
+git push origin :refs/tags/vX.Y.Z
+
+# recriar tag ANOTADA no commit correto (HEAD atual ou um SHA específico)
+git tag -a vX.Y.Z -m "Release vX.Y.Z"            # aponta pro HEAD atual
+# ou: git tag -a vX.Y.Z <SHA_CORRETO> -m "Release vX.Y.Z"
+
+git push origin vX.Y.Z
+
+# regenerar changelog completo (garante consistência entre tags)
+poetry run cz changelog
+git add CHANGELOG.md
+git commit -m "docs(changelog): corrigir changelog após retag vX.Y.Z"
+git push origin main
+```
+
+---
+
+### Problemas comuns (e como resolver)
+- **“No tag found to do an incremental changelog”** → crie as tags anteriores como **anotadas** (`git tag -a vA.B.C <SHA> -m "Release vA.B.C"`) e rode `poetry run cz changelog` novamente.
+- **Tag leve (sem mensagem)** → recrie como anotada: `git tag -d vX.Y.Z && git tag -a vX.Y.Z <SHA> -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
+- **“Repository not found”/403 no push** → confira o **remote** (`git remote -v`), as **credenciais** (limpe no Gerenciador de Credenciais do Windows, se preciso) e use token/pat ou SSH.
 
 ---
 
