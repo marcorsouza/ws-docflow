@@ -1,8 +1,9 @@
+# src/ws_docflow/infra/parsers/br_dta_parser.py
 from __future__ import annotations
 
 import re
 from decimal import Decimal
-from typing import Dict
+from typing import Dict, Literal
 
 from ws_docflow.core.ports import DocParser
 from ws_docflow.core.domain.models import (
@@ -24,6 +25,8 @@ DOC_MASK = re.compile(
     r"^(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2})\s*-\s*(.+)$"
 )
 
+TipoTotais = Literal["ARMAZENAMENTO", "OUTRO", "DESCONHECIDO"]
+
 
 def _split_code_desc(raw: str) -> Dict[str, str]:
     m = _CODE_DESC.match(raw.strip())
@@ -35,6 +38,15 @@ def _split_code_desc(raw: str) -> Dict[str, str]:
 def parse_money_ptbr(raw: str) -> Decimal:
     s = raw.strip().replace(".", "").replace(",", ".")
     return Decimal(s)
+
+
+def _normalize_tipo_totais(valor: str) -> TipoTotais:
+    v = (valor or "").strip().upper()
+    if "ARMAZEN" in v:
+        return "ARMAZENAMENTO"
+    if not v or v in {"N/A", "-"}:
+        return "DESCONHECIDO"
+    return "OUTRO"
 
 
 # -----------------------
@@ -148,16 +160,15 @@ class BrDtaParser(DocParser):
         # Totais
         t = _TOTAIS_REGEX.search(text)
         if t:
-            tipo_raw = t.group("tipo").strip().upper()
-            tipo_tot = (
-                "ARMAZENAMENTO" if "ARMAZENAMENTO" in tipo_raw else "DESCONHECIDO"
-            )
+            tipo_raw = t.group("tipo").strip()
+            tipo_tot: TipoTotais = _normalize_tipo_totais(tipo_raw)
 
             usd = brl = None
             try:
                 usd = parse_money_ptbr(t.group("usd"))
                 brl = parse_money_ptbr(t.group("brl"))
             except Exception:
+                # mantém None se parsing falhar
                 pass
 
             doc.totais_origem = TotaisOrigem(
