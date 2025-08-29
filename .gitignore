@@ -11,3 +11,5 @@ htmlcov/
 .env
 .env.*
 "@ | Out-File -Encoding UTF8 .gitignore
+
+resultado.json
