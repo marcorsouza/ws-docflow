@@ -18,6 +18,7 @@ Atualmente suporta extração dos seguintes blocos:
 - [x] Parser de Origem/Destino, Participantes e Totais
 - [x] CLI `parse` funcional (JSON)
 - [x] Testes unitários cobrindo models, parser e CLI
+- [x] Refatoração para Clean Architecture (core/infra/cli)
 - [ ] Exportar em múltiplos formatos (`--out`, `--format json|csv`)
 - [ ] OCR (opcional, via pytesseract)
 - [ ] Integração Contínua (GitHub Actions)
@@ -49,6 +50,48 @@ Atualmente suporta extração dos seguintes blocos:
   - Pytest (testes + cobertura)
 
 ---
+
+## Arquitetura
+
+O projeto segue princípios de **Clean Architecture / Ports & Adapters**, separando camadas:
+
+- **core** → Regras de negócio e contratos
+  - `domain/` → modelos (Pydantic)
+  - `ports.py` → interfaces (Protocols) para extratores/parsers
+  - `use_cases/` → orquestrações (ex.: `ExtractDataUseCase`)
+- **infra** → Implementações dos ports
+  - `pdf/` → extratores de texto (ex.: `PdfPlumberExtractor`)
+  - `parsers/` → parsers específicos (ex.: `BrDtaParser`)
+- **cli** → Entrada de linha de comando (Typer)
+
+---
+
+## Roadmap / Próximas Etapas
+
+### 1. CLI
+- [ ] Adicionar opção `--out <arquivo>` para salvar resultado
+- [ ] Suporte a `--format json|csv`
+- [ ] Melhorar UX com **rich** (logs, cores, tabela de resultados)
+- [ ] Comando `parse-batch <dir>` para processar múltiplos PDFs
+
+### 2. OCR (Opcional)
+- [ ] Integrar **pytesseract** para PDFs escaneados
+- [ ] Flag `--ocr` para fallback automático
+
+### 3. Testes
+- [ ] Fixtures de PDFs reais/mascarados
+- [ ] Casos com variação de layout (acentos, hífenes diferentes, linhas em branco)
+- [ ] Cobertura com `pytest-cov`
+
+### 4. Integração Contínua
+- [ ] Configurar **GitHub Actions** para rodar:
+  - Ruff (lint)
+  - Black (format)
+  - Mypy (tipagem)
+  - Pytest (testes + cobertura)
+
+---
+
 
 ## Como rodar o parser
 

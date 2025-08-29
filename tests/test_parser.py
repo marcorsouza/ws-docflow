@@ -1,6 +1,5 @@
-# tests/test_parser.py
-from src.ws_docflow.parser import extract_from_text
-from src.ws_docflow.models import DocumentoDados
+from ws_docflow.infra.parsers.br_dta_parser import BrDtaParser
+from ws_docflow.core.domain.models import DocumentoDados
 
 
 def test_extract_from_text_minimo():
@@ -12,7 +11,8 @@ def test_extract_from_text_minimo():
     Unidade Local: 1017700 - PORTO DE RIO GRANDE
     Recinto Aduaneiro: 0923201 - TRANSCONTINENTAL LOGÍSTICA_S.A
     """
-    doc = extract_from_text(text)
+    parser = BrDtaParser()
+    doc = parser.parse(text)
     assert isinstance(doc, DocumentoDados)
     assert doc.origem.unidade_local.codigo == "1017700"
     assert doc.origem.recinto_aduaneiro.codigo == "0301304"

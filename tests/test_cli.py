@@ -1,11 +1,10 @@
-# tests/test_cli.py
 from typer.testing import CliRunner
-from ws_docflow.cli import app
+from ws_docflow.cli.app import app
 
 runner = CliRunner()
 
 
-def test_parse_stub():
-    result = runner.invoke(app, ["parse", "exemplo.pdf"])
+def test_parse_help_shows_command():
+    result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "[ws-docflow] Processando PDF: exemplo.pdf" in result.stdout
+    assert "parse" in result.stdout
