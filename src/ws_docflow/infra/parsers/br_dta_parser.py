@@ -1,4 +1,3 @@
-# src/ws_docflow/infra/parsers/br_dta_parser.py
 from __future__ import annotations
 
 import re
@@ -13,6 +12,7 @@ from ws_docflow.core.domain.models import (
     RecintoAduaneiro,
     Participante,
     TotaisOrigem,
+    DeclaracaoInfo,
 )
 
 # -----------------------
@@ -26,9 +26,6 @@ DOC_MASK = re.compile(
 
 
 def _split_code_desc(raw: str) -> Dict[str, str]:
-    """
-    Divide 'NNNNNNN - DESCRIÇÃO' em {'codigo': ..., 'descricao': ...}
-    """
     m = _CODE_DESC.match(raw.strip())
     if not m:
         raise ValueError(f"Formato inválido: {raw!r}. Esperado 'NNNNNNN - DESCRIÇÃO'.")
@@ -36,9 +33,6 @@ def _split_code_desc(raw: str) -> Dict[str, str]:
 
 
 def parse_money_ptbr(raw: str) -> Decimal:
-    """
-    Converte '1.611.283,47' -> Decimal('1611283.47')
-    """
     s = raw.strip().replace(".", "").replace(",", ".")
     return Decimal(s)
 
@@ -47,7 +41,12 @@ def parse_money_ptbr(raw: str) -> Decimal:
 # Regex (line-based)
 # -----------------------
 
-# Bloco Origem/Destino (ancoras por linha e tolerância a linhas em branco)
+_DECL_NUM_RE = re.compile(r"N[ºo]\s*da\s*Declara[çc][ãa]o:\s*(.+)", re.IGNORECASE)
+_TIPO_RE = re.compile(r"Tipo:\s*(.+)", re.IGNORECASE)
+_SIT_ATUAL_RE = re.compile(
+    r"Situa[çc][ãa]o\s*Atual\s*(.+?)(?:\n\s*Cargas\b|$)", re.IGNORECASE | re.DOTALL
+)
+
 _ORIG_DEST_REGEX = re.compile(
     r"""
     ^\s*Origem\s*\r?\n
@@ -63,7 +62,6 @@ _ORIG_DEST_REGEX = re.compile(
     re.IGNORECASE | re.MULTILINE | re.VERBOSE,
 )
 
-# Beneficiário / Transportador
 _PARTICIPANTES_REGEX = re.compile(
     r"""
     ^\s*CNPJ/CPF\s+do\s+Benefici[aá]rio:\s*(?P<benef>[^\r\n]+)\r?\n
@@ -72,7 +70,6 @@ _PARTICIPANTES_REGEX = re.compile(
     re.IGNORECASE | re.MULTILINE | re.VERBOSE,
 )
 
-# Totais na origem
 _TOTAIS_REGEX = re.compile(
     r"""
     ^\s*Tratamento\s+na\s+Origem\s+Totais\s*\r?\n
@@ -93,13 +90,35 @@ _TOTAIS_REGEX = re.compile(
 class BrDtaParser(DocParser):
     """
     Parser para documentos BR (DTA) extraindo:
-    - Origem/Destino (Unidade Local + Recinto)
-    - Participantes: Beneficiário / Transportador (CNPJ/CPF + nome)
-    - Totais na origem: Tipo, valor USD, valor BRL
+    - Nº Declaração (normalizado sem hífen)
+    - Tipo de DTA
+    - Situação Atual (bloco livre)
+    - Origem/Destino
+    - Participantes
+    - Totais na origem
     """
 
     def parse(self, text: str) -> DocumentoDados:
-        # Origem/Destino (obrigatório)
+        # Declaração
+        decl_num = ""
+        tipo = ""
+        situacao_atual = ""
+
+        m_num = _DECL_NUM_RE.search(text)
+        if m_num:
+            decl_num = re.sub(r"\D", "", m_num.group(1).strip())
+
+        m_tipo = _TIPO_RE.search(text)
+        if m_tipo:
+            tipo = m_tipo.group(1).strip()
+
+        m_sit = _SIT_ATUAL_RE.search(text)
+        if m_sit:
+            bloco = m_sit.group(1).strip()
+            bloco = re.sub(r"javascript:history\.back\(\);\s*", "", bloco)
+            situacao_atual = re.sub(r"[ \t]+$", "", bloco, flags=re.MULTILINE)
+
+        # Origem/Destino
         m = _ORIG_DEST_REGEX.search(text)
         if not m:
             raise ValueError("Blocos Origem/Destino não encontrados no texto.")
@@ -110,11 +129,13 @@ class BrDtaParser(DocParser):
         dra = RecintoAduaneiro(**_split_code_desc(m.group("dest_ra")))
 
         doc = DocumentoDados(
+            declaracao=DeclaracaoInfo(numero=decl_num, tipo=tipo),
+            situacao_atual=situacao_atual,
             origem=Localidade(unidade_local=oul, recinto_aduaneiro=ora),
             destino=Localidade(unidade_local=dul, recinto_aduaneiro=dra),
         )
 
-        # Participantes (opcional)
+        # Participantes
         p = _PARTICIPANTES_REGEX.search(text)
         if p:
             benef_raw = p.group("benef").strip()
@@ -124,22 +145,21 @@ class BrDtaParser(DocParser):
             if DOC_MASK.match(transp_raw):
                 doc.transportador = Participante.from_raw(transp_raw)
 
-        # Totais (opcional)
+        # Totais
         t = _TOTAIS_REGEX.search(text)
         if t:
             tipo_raw = t.group("tipo").strip().upper()
-            tipo = "ARMAZENAMENTO" if "ARMAZENAMENTO" in tipo_raw else "DESCONHECIDO"
+            tipo_tot = "ARMAZENAMENTO" if "ARMAZENAMENTO" in tipo_raw else "DESCONHECIDO"
 
             usd = brl = None
             try:
                 usd = parse_money_ptbr(t.group("usd"))
                 brl = parse_money_ptbr(t.group("brl"))
             except Exception:
-                # mantém None se falhar parsing monetário
                 pass
 
             doc.totais_origem = TotaisOrigem(
-                tipo=tipo,
+                tipo=tipo_tot,
                 valor_total_usd=usd,
                 valor_total_brl=brl,
             )
