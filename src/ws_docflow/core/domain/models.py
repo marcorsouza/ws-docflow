@@ -86,9 +86,7 @@ class DeclaracaoInfo(BaseModel):
 
 class DocumentoDados(BaseModel):
     # Compatibilidade retro: defaults permitem instanciar apenas com origem/destino
-    declaracao: DeclaracaoInfo = Field(
-        default=DeclaracaoInfo(numero="", tipo="")
-    )
+    declaracao: DeclaracaoInfo = Field(default=DeclaracaoInfo(numero="", tipo=""))
 
     situacao_atual: str = ""
 

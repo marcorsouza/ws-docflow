@@ -2,6 +2,7 @@
 import pdfplumber
 from ws_docflow.core.ports import TextExtractor
 
+
 class PdfPlumberExtractor(TextExtractor):
     def extract(self, pdf_path: str) -> str:
         parts: list[str] = []
