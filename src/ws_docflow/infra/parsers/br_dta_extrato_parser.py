@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 from zoneinfo import ZoneInfo
 
@@ -21,6 +21,8 @@ from ws_docflow.core.domain.models import (
 )
 
 TZ = ZoneInfo("America/Sao_Paulo")
+
+TipoTotais = Literal["ARMAZENAMENTO", "OUTRO", "DESCONHECIDO"]
 
 # -----------------------
 # Utilidades / helpers
@@ -254,6 +256,15 @@ class BrDtaExtratoParser(DocParser):
                     return "DESCONHECIDO"
                 return "OUTRO"
 
+            def _norm_tipo_totais(v: str | None) -> TipoTotais:
+                if not v:
+                    return "DESCONHECIDO"
+                s = v.strip().upper()
+                if "ARMAZEN" in s:  # cobre 'ARMAZENAMENTO'
+                    return "ARMAZENAMENTO"
+                # adicione outros padrões se surgirem layouts distintos
+                return "OUTRO"
+
             usd = brl = None
             try:
                 usd = parse_money_ptbr(t.group("usd"))
@@ -262,7 +273,7 @@ class BrDtaExtratoParser(DocParser):
                 pass
 
             doc.totais_origem = TotaisOrigem(
-                tipo=_normalize_tipo(tipo_raw),
+                tipo=_norm_tipo_totais(tipo_raw),
                 valor_total_usd=usd,
                 valor_total_brl=brl,
             )

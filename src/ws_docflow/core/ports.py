@@ -1,8 +1,11 @@
-from typing import Protocol
+from typing import Protocol, Union
+
+
+SourceT = Union[str, bytes]
 
 
 class TextExtractor(Protocol):
-    def extract(self, pdf_path: str) -> str: ...
+    def extract(self, source: SourceT) -> str: ...
 
 
 class DocParser(Protocol):

@@ -7,9 +7,11 @@ from typing import Union
 import pdfplumber
 from ws_docflow.core.ports import TextExtractor
 
+SourceT = Union[str, bytes]
+
 
 class PdfPlumberExtractor(TextExtractor):
-    def extract(self, source: Union[str, bytes]) -> str:
+    def extract(self, source: SourceT) -> str:
         """
         Extrai texto de um PDF a partir de:
           - caminho de arquivo (str)

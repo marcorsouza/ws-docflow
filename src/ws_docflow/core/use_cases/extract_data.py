@@ -5,6 +5,8 @@ from typing import Iterable, List, Sequence, Union
 
 from ws_docflow.core.ports import TextExtractor, DocParser
 
+SourceT = Union[str, bytes]
+
 
 class ExtractDataUseCase:
     """
@@ -28,8 +30,8 @@ class ExtractDataUseCase:
         else:
             self.parsers = [parser_or_parsers]  # um único parser
 
-    def run(self, pdf_path: str):
-        text = self.extractor.extract(pdf_path)  # mantém igual
+    def run(self, source: SourceT) -> any:
+        text = self.extractor.extract(source)  # mantém igual
         last_err: Exception | None = None
 
         for parser in self.parsers:
