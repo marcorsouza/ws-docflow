@@ -1,32 +1,32 @@
 # 📦 ws-docflow
 
-[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/)  
-[![Poetry](https://img.shields.io/badge/Poetry-managed-informational)](https://python-poetry.org/)  
-[![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)  
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/)
+[![Poetry](https://img.shields.io/badge/Poetry-managed-informational)](https://python-poetry.org/)
+[![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.  
+Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.
 Atualmente suporta extração de:
 
-- 📍 Origem (Unidade Local + Recinto Aduaneiro)  
-- 🎯 Destino (Unidade Local + Recinto Aduaneiro)  
-- 🏢 Beneficiário (CNPJ/CPF + Nome)  
-- 🚢 Transportador (CNPJ/CPF + Nome)  
-- 💰 Totais de origem (Tipo, Valor USD, Valor BRL)  
+- 📍 Origem (Unidade Local + Recinto Aduaneiro)
+- 🎯 Destino (Unidade Local + Recinto Aduaneiro)
+- 🏢 Beneficiário (CNPJ/CPF + Nome)
+- 🚢 Transportador (CNPJ/CPF + Nome)
+- 💰 Totais de origem (Tipo, Valor USD, Valor BRL)
 
 ---
 
 ## ✨ Features
 
-- ✅ Parser BR-DTA baseado em **regex line-based**  
-- ✅ CLI simples via [Typer](https://typer.tiangolo.com/)  
-- ✅ Models e validações com [Pydantic v2](https://docs.pydantic.dev/)  
-- ✅ Lint/format/tipos com `ruff`, `black`, `mypy`, `pre-commit`  
-- ✅ Testes unitários com `pytest` + cobertura  
-- ✅ Versionamento semântico com **Commitizen**  
-- 🔜 Exportar múltiplos formatos (`--out`, `--format json|csv`)  
-- 🔜 OCR opcional (via **pytesseract**)  
-- 🔜 Integração Contínua com **GitHub Actions**  
+- ✅ Parser BR-DTA baseado em **regex line-based**
+- ✅ CLI simples via [Typer](https://typer.tiangolo.com/)
+- ✅ Models e validações com [Pydantic v2](https://docs.pydantic.dev/)
+- ✅ Lint/format/tipos com `ruff`, `black`, `mypy`, `pre-commit`
+- ✅ Testes unitários com `pytest` + cobertura
+- ✅ Versionamento semântico com **Commitizen**
+- 🔜 Exportar múltiplos formatos (`--out`, `--format json|csv`)
+- 🔜 OCR opcional (via **pytesseract**)
+- 🔜 Integração Contínua com **GitHub Actions**
 
 ---
 
@@ -68,7 +68,7 @@ poetry install
 poetry run ws-docflow --version
 ```
 
-> 💡 No Windows, use **PowerShell**.  
+> 💡 No Windows, use **PowerShell**.
 > 💡 Para OCR futuro, instale também [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki).
 
 ---
@@ -125,40 +125,40 @@ poetry run pre-commit run --all-files
 
 ## 📌 Roadmap
 
-- [ ] `--out <arquivo>` e `--format json|csv`  
-- [ ] `parse-batch <dir>` para múltiplos PDFs  
-- [ ] Logs coloridos com **rich**  
-- [ ] OCR com fallback pytesseract  
-- [ ] Fixtures com PDFs mascarados  
-- [ ] CI (Ruff, Black, Mypy, Pytest, cobertura)  
+- [ ] `--out <arquivo>` e `--format json|csv`
+- [ ] `parse-batch <dir>` para múltiplos PDFs
+- [ ] Logs coloridos com **rich**
+- [ ] OCR com fallback pytesseract
+- [ ] Fixtures com PDFs mascarados
+- [ ] CI (Ruff, Black, Mypy, Pytest, cobertura)
 
 ---
 
 ## 🔗 Contribuição
 
-1. Crie branch a partir de `main`:  
+1. Crie branch a partir de `main`:
    ```bash
    git checkout -b feature/sua-feature
    ```
-2. Rode testes e pre-commit:  
+2. Rode testes e pre-commit:
    ```bash
    poetry run pytest
    poetry run pre-commit run --all-files
    ```
-3. Commits no padrão [Conventional Commits](https://www.conventionalcommits.org/)  
+3. Commits no padrão [Conventional Commits](https://www.conventionalcommits.org/)
 4. Abra um PR — template disponível em `.github/pull_request_template.md`
 
 ---
 
 ## 📜 Versionamento
 
-- Versionamento semântico com **Commitizen**  
-- Histórico no [CHANGELOG.md](CHANGELOG.md)  
+- Versionamento semântico com **Commitizen**
+- Histórico no [CHANGELOG.md](CHANGELOG.md)
 - Tags no formato `vX.Y.Z`
 
 ---
 
 ## 📄 Licença
 
-Este projeto é distribuído sob a licença MIT.  
+Este projeto é distribuído sob a licença MIT.
 Veja [LICENSE](LICENSE) para mais detalhes.
