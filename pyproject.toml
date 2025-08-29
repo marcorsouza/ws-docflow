@@ -1,29 +1,23 @@
-[project]
+[tool.poetry]
 name = "ws-docflow"
 version = "0.3.0"
-description = ""
-authors = [
-    {name = "Marco Souza",email = "marco.rsouza@gmail.com"}
-]
+description = "Pipeline de extração e validação de dados a partir de PDFs aduaneiros (Clean Architecture)."
+authors = ["Marco Souza <marco.rsouza@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.13,<4.0"
-dependencies = [
-    "pdfplumber (>=0.11.7,<0.12.0)",
-    "pypdf (>=6.0.0,<7.0.0)",
-    "pydantic (>=2.11.7,<3.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "typer[all] (>=0.16.1,<0.17.0)",
-    "rich (>=14.1.0,<15.0.0)",
-    "tqdm (>=4.67.1,<5.0.0)",
-    "tenacity (>=9.1.2,<10.0.0)",
-    "pillow (>=11.3.0,<12.0.0)",
-    "pytesseract (>=0.3.13,<0.4.0)"
-]
+packages = [{ include = "ws_docflow", from = "src" }]
 
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pdfplumber = ">=0.11.7,<0.12.0"
+pypdf = ">=6.0.0,<7.0.0"
+pydantic = ">=2.11.7,<3.0.0"
+python-dotenv = ">=1.1.1,<2.0.0"
+typer = { version = ">=0.16.1,<0.17.0", extras = ["all"] }
+rich = ">=14.1.0,<15.0.0"
+tqdm = ">=4.67.1,<5.0.0"
+tenacity = ">=9.1.2,<10.0.0"
+pillow = ">=11.3.0,<12.0.0"
+pytesseract = ">=0.3.13,<0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12.11"
@@ -33,17 +27,19 @@ pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
 pre-commit = "^4.3.0"
 commitizen = "^4.8.3"
+exceptiongroup = "^1.2.1"
 
-
-[project.scripts]
+[tool.poetry.scripts]
 ws-docflow = "ws_docflow.cli.app:app"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
 version = "0.3.0"
 tag_format = "v$version"
-version_files = [
-    "pyproject.toml:version"
-]
+version_files = ["pyproject.toml:version"]
 update_changelog = true
 changelog_file = "CHANGELOG.md"
