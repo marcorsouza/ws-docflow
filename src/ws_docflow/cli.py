@@ -37,4 +37,5 @@ def parse_cmd(pdf_path: str = typer.Argument(..., help="Caminho do arquivo PDF")
     Extrai dados de Origem/Destino de um arquivo PDF e imprime JSON.
     """
     doc = extract_from_pdf(pdf_path)
-    typer.echo(json.dumps(doc.model_dump(), ensure_ascii=False, indent=2))
+    data = doc.model_dump(mode="json")  # <- converte Decimal, etc.
+    typer.echo(json.dumps(data, ensure_ascii=False, indent=2))
