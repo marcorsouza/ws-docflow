@@ -1,3 +1,14 @@
+## v0.6.0 (2025-08-29)
+
+### Feat
+
+- **api**: adicionar endpoints /api/parse e /api/parse-b64
+
+### Fix
+
+- **types**: definir DocModel Protocol e tipar run() para retornar DocModel
+- **types**: normalizar TotaisOrigem.tipo e aceitar Union[str, bytes] no use case/ports
+
 ## v0.5.2 (2025-08-29)
 
 ### Docs
