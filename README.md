@@ -1,41 +1,47 @@
 # ws-docflow
 
-Pipeline de extração e validação de dados a partir de PDFs (Origem/Destino, Unidade Local, Recinto Aduaneiro).
+Pipeline de extração e validação de dados a partir de PDFs aduaneiros.
+Atualmente suporta extração dos seguintes blocos:
+
+- Origem (Unidade Local + Recinto Aduaneiro)
+- Destino (Unidade Local + Recinto Aduaneiro)
+- Beneficiário (CNPJ/CPF + Nome)
+- Transportador (CNPJ/CPF + Nome)
+- Tratamento na Origem Totais (Tipo, Valor USD, Valor BRL)
+
+---
 
 ## Status
 - [x] Estrutura inicial (Poetry, venv, Git)
 - [x] Qualidade (ruff/black/mypy/pre-commit)
-- [ ] CLI e parsers
-- [ ] OCR (opcional)
+- [x] Models e validações Pydantic
+- [x] Parser de Origem/Destino, Participantes e Totais
+- [x] CLI `parse` funcional (JSON)
+- [x] Testes unitários cobrindo models, parser e CLI
+- [ ] Exportar em múltiplos formatos (`--out`, `--format json|csv`)
+- [ ] OCR (opcional, via pytesseract)
+- [ ] Integração Contínua (GitHub Actions)
 
 ---
 
 ## Roadmap / Próximas Etapas
 
-### 1. Testes First
-- [ ] Configurar **pytest** com fixtures de PDFs de exemplo
-- [ ] Criar testes unitários para:
-- [ ] Extração de texto cru de PDF (`pdfplumber`)
-- [ ] Regex para Origem/Destino, Unidade Local, Recinto Aduaneiro
-- [ ] Modelo Pydantic de validação dos campos
-- [ ] Configurar `pytest-cov` para medir cobertura
+### 1. CLI
+- [ ] Adicionar opção `--out <arquivo>` para salvar resultado
+- [ ] Suporte a `--format json|csv`
+- [ ] Melhorar UX com **rich** (logs, cores, tabela de resultados)
+- [ ] Comando `parse-batch <dir>` para processar múltiplos PDFs
 
-### 2. Parser (Extração de Dados)
-- [ ] Implementar função de leitura de PDF → texto
-- [ ] Implementar função de parsing dos blocos **Origem** e **Destino**
-- [ ] Validar dados via modelos Pydantic
-- [ ] Exportar resultado em JSON
-
-### 3. CLI (Typer)
-- [ ] Criar comando `parse <arquivo.pdf>`
-- [ ] Opção `--out json/csv` para salvar saída
-- [ ] Logs coloridos com **rich**
-
-### 4. OCR (Opcional)
+### 2. OCR (Opcional)
 - [ ] Integrar **pytesseract** para PDFs escaneados
-- [ ] Adicionar flag `--ocr` na CLI
+- [ ] Flag `--ocr` para fallback automático
 
-### 5. Integração Contínua
+### 3. Testes
+- [ ] Fixtures de PDFs reais/mascarados
+- [ ] Casos com variação de layout (acentos, hífenes diferentes, linhas em branco)
+- [ ] Cobertura com `pytest-cov`
+
+### 4. Integração Contínua
 - [ ] Configurar **GitHub Actions** para rodar:
   - Ruff (lint)
   - Black (format)
@@ -44,7 +50,45 @@ Pipeline de extração e validação de dados a partir de PDFs (Origem/Destino, 
 
 ---
 
+## Como rodar o parser
+
+```bash
+poetry run ws-docflow parse caminho/do/arquivo.pdf
+```
+
+Saída (exemplo fictício):
+
+```json
+{
+  "origem": {
+    "unidade_local": {"codigo": "8765432", "descricao": "PORTO DE SANTOS"},
+    "recinto_aduaneiro": {"codigo": "1234567", "descricao": "TECON SANTOS TERMINAL DE CONTÊINERES"}
+  },
+  "destino": {
+    "unidade_local": {"codigo": "7654321", "descricao": "PORTO DE ITAJAÍ"},
+    "recinto_aduaneiro": {"codigo": "2345678", "descricao": "PORTONAVE TERMINAL DE NAVEGANTES"}
+  },
+  "beneficiario": {
+    "documento": "11.222.333/0001-44",
+    "nome": "COMPANHIA BRASILEIRA DE EXPORTAÇÃO LTDA"
+  },
+  "transportador": {
+    "documento": "55.666.777/0001-88",
+    "nome": "NAVIOS ATLÂNTICO LOGÍSTICA S/A"
+  },
+  "totais_origem": {
+    "tipo": "ARMAZENAMENTO",
+    "valor_total_usd": 45200.75,
+    "valor_total_brl": 235000.40
+  }
+}
+```
+
+---
+
 ## Como rodar os testes
+
 ```bash
 poetry run pytest -v
 poetry run pytest --cov=ws_docflow --cov-report=term-missing
+```
