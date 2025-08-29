@@ -1,3 +1,9 @@
+## v0.3.0 (2025-08-28)
+
+### Refactor
+
+- **arch**: aplicar clean architecture (core/infra/cli) e ajustar imports/entrypoint
+
 ## v0.2.0 (2025-08-28)
 
 ### Feat
