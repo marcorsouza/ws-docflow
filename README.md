@@ -4,25 +4,29 @@
 [![Poetry](https://img.shields.io/badge/Poetry-managed-informational)](https://python-poetry.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-
 Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.
 Atualmente suporta extração de:
 
 - 🧾 Declaração (Número sem hífen + Tipo)
-- 📌 Situação Atual (bloco de status livre)
+- 📌 Situação Atual (bloco de status livre, quando existir)
 - 📍 Origem (Unidade Local + Recinto Aduaneiro)
 - 🎯 Destino (Unidade Local + Recinto Aduaneiro)
 - 🏢 Beneficiário (CNPJ/CPF + Nome)
 - 🚢 Transportador (CNPJ/CPF + Nome)
 - 💰 Totais de origem (Tipo, Valor USD, Valor BRL)
+- 🛣️ Via de Transporte (*RODOVIARIA*, etc.) — **apenas em Extratos**
+- 📑 Situação detalhada da Declaração (*solicitada/registrada em + CPF, veículos informados, dossiês vinculados*) — **apenas em Extratos**
 
 ---
 
 ## ✨ Features
 
-- ✅ Parser BR-DTA baseado em **regex line-based**
-- ✅ CLI simples via [Typer](https://typer.tiangolo.com/)
+- ✅ Parsers BR-DTA (dois layouts):
+  - **Clássico**: “Trânsito Aduaneiro – Extrato da Declaração de Trânsito”
+  - **Extrato (Dados Gerais)**: inclui bloco *Via de Transporte/Situação*
+- ✅ Fallback automático na CLI (tenta Extrato → Clássico)
 - ✅ Models e validações com [Pydantic v2](https://docs.pydantic.dev/)
+- ✅ CLI simples via [Typer](https://typer.tiangolo.com/)
 - ✅ Lint/format/tipos com `ruff`, `black`, `mypy`, `pre-commit`
 - ✅ Testes unitários com `pytest` + cobertura
 - ✅ Versionamento semântico com **Commitizen**
@@ -46,7 +50,7 @@ src/ws_docflow/
 │  └─ use_cases/        # orquestrações (ex.: ExtractDataUseCase)
 └─ infra/               # implementações concretas
    ├─ pdf/              # extratores (ex.: PdfPlumberExtractor)
-   └─ parsers/          # parsers (ex.: BrDtaParser)
+   └─ parsers/          # parsers (BrDtaParser, BrDtaExtratoParser)
 ```
 
 ---
@@ -82,7 +86,7 @@ poetry run ws-docflow --version
 poetry run ws-docflow parse caminho/do/arquivo.pdf
 ```
 
-Exemplo de saída:
+### Exemplo de saída (layout clássico)
 
 ```json
 {
@@ -111,6 +115,47 @@ Exemplo de saída:
     "tipo": "ARMAZENAMENTO",
     "valor_total_usd": 45200.75,
     "valor_total_brl": 235000.40
+  }
+}
+```
+
+### Exemplo de saída (layout Extrato — Dados Gerais)
+
+```json
+{
+  "declaracao": {
+    "numero": "2503999080",
+    "tipo": "DTA - ENTRADA COMUM"
+  },
+  "origem": {
+    "unidade_local": {"codigo": "1017700", "descricao": "PORTO DE RIO GRANDE"},
+    "recinto_aduaneiro": {"codigo": "0301304", "descricao": "INST.PORT.MAR.ALF.USO PUBLICO-TECON RIO GRANDE-RIO GRANDE/RS"}
+  },
+  "destino": {
+    "unidade_local": {"codigo": "1010700", "descricao": "DRF NOVO HAMBURGO"},
+    "recinto_aduaneiro": {"codigo": "0403201", "descricao": "EADI-MULTI ARMAZENS LTDA-NOVO HAMBURGO/RS"}
+  },
+  "beneficiario": {
+    "documento": "08.325.039/0001-90",
+    "nome": "SS INDUSTRIA METALURGICA DE TELAS LTDA"
+  },
+  "transportador": {
+    "documento": "13.233.554/0001-80",
+    "nome": "MULTI EXPRESS BRASIL TRANSPORTES DE CARGAS LTDA"
+  },
+  "totais_origem": {
+    "tipo": "ARMAZENAMENTO",
+    "valor_total_usd": 57024.00,
+    "valor_total_brl": 308585.37
+  },
+  "transporte": {"via": "RODOVIARIA"},
+  "situacao": {
+    "solicitada_em": "2025-08-29T16:30:23-03:00",
+    "solicitada_por_cpf": "778.857.910-68",
+    "registrada_em": "2025-08-29T16:37:40-03:00",
+    "registrada_por_cpf": "778.857.910-68",
+    "veiculos_informados": false,
+    "dossies_vinculados": ["20250029718711-2"]
   }
 }
 ```
@@ -164,86 +209,3 @@ poetry run pre-commit run --all-files
 - Tags no formato `vX.Y.Z`
 
 ---
-
-## 🔖 Releases & Tags (Commitizen + Git)
-
-### Fluxo recomendado (automático, com changelog)
-```bash
-# sempre versionar a partir da main atualizada
-git checkout main
-git pull origin main
-
-# checagens rápidas (opcional, mas recomendado)
-poetry run pre-commit run --all-files
-poetry run pytest -q
-
-# gerar versão + tag anotada + CHANGELOG
-# (troque patch por minor/major quando fizer sentido)
-poetry run cz bump --yes --increment patch --changelog
-
-# enviar commit e tags
-git push origin main --tags
-```
-
-> Padrão de tags: `vX.Y.Z` (configurado em `[tool.commitizen] tag_format = "v$version"`).
-> Use **tags anotadas** (com `-a`) — é isso que o Commitizen usa para montar o changelog.
-
----
-
-### Alternativa manual (se precisar taggear “na mão”)
-```bash
-# descobrir o SHA do commit que você quer taggear
-git log --oneline --decorate -n 10
-
-# criar tag ANOTADA no SHA correto
-git tag -a vX.Y.Z <SHA> -m "Release vX.Y.Z"
-
-# enviar a tag
-git push origin vX.Y.Z
-
-# gerar/atualizar o changelog
-poetry run cz changelog --incremental
-git add CHANGELOG.md
-git commit -m "docs(changelog): gerar changelog para vX.Y.Z"
-git push origin main
-```
-
-> No Windows/PowerShell, **não use** `<SHA>` literal — troque pelo hash real (ex.: `688d8c1`).
-
----
-
-### Corrigir tag criada no commit errado (retag)
-```bash
-# ver onde a tag aponta hoje
-git show --summary vX.Y.Z
-
-# deletar local e remoto
-git tag -d vX.Y.Z
-git push origin :refs/tags/vX.Y.Z
-
-# recriar tag ANOTADA no commit correto (HEAD atual ou um SHA específico)
-git tag -a vX.Y.Z -m "Release vX.Y.Z"            # aponta pro HEAD atual
-# ou: git tag -a vX.Y.Z <SHA_CORRETO> -m "Release vX.Y.Z"
-
-git push origin vX.Y.Z
-
-# regenerar changelog completo (garante consistência entre tags)
-poetry run cz changelog
-git add CHANGELOG.md
-git commit -m "docs(changelog): corrigir changelog após retag vX.Y.Z"
-git push origin main
-```
-
----
-
-### Problemas comuns (e como resolver)
-- **“No tag found to do an incremental changelog”** → crie as tags anteriores como **anotadas** (`git tag -a vA.B.C <SHA> -m "Release vA.B.C"`) e rode `poetry run cz changelog` novamente.
-- **Tag leve (sem mensagem)** → recrie como anotada: `git tag -d vX.Y.Z && git tag -a vX.Y.Z <SHA> -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
-- **“Repository not found”/403 no push** → confira o **remote** (`git remote -v`), as **credenciais** (limpe no Gerenciador de Credenciais do Windows, se preciso) e use token/pat ou SSH.
-
----
-
-## 📄 Licença
-
-Este projeto é distribuído sob a licença MIT.
-Veja [LICENSE](LICENSE) para mais detalhes.
