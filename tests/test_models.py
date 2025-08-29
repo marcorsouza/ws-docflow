@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from ws_docflow.core.domain.models import DeclaracaoInfo
+from ws_docflow.core.domain.models import DeclaracaoInfo, Situacao, Transporte
 from ws_docflow.core.domain.models import (
     UnidadeLocal,
     RecintoAduaneiro,
@@ -105,3 +105,35 @@ def test_validacao_codigo7_pelo_modelo():
         UnidadeLocal(codigo="123456", descricao="X")
     with pytest.raises(ValidationError):
         RecintoAduaneiro(codigo="123456A", descricao="Y")
+
+
+def test_transporte_situacao_opcionais():
+    origem = Localidade(
+        unidade_local=UnidadeLocal.from_raw("1017700 - PORTO DE RIO GRANDE"),
+        recinto_aduaneiro=RecintoAduaneiro.from_raw(
+            "0301304 - INST.PORT.MAR.ALF.USO PUBLICO-TECON RIO GRANDE-RIO GRANDE/RS"
+        ),
+    )
+    destino = Localidade(
+        unidade_local=UnidadeLocal.from_raw("1017700 - PORTO DE RIO GRANDE"),
+        recinto_aduaneiro=RecintoAduaneiro.from_raw(
+            "0923201 - TRANSCONTINENTAL LOGÍSTICA_S.A"
+        ),
+    )
+
+    # sem transporte/situacao
+    doc = DocumentoDados(
+        declaracao=DeclaracaoInfo(numero="X", tipo="Y"), origem=origem, destino=destino
+    )
+    assert doc.transporte is None and doc.situacao is None
+
+    # com transporte/situacao parciais
+    doc2 = DocumentoDados(
+        declaracao=DeclaracaoInfo(numero="X", tipo="Y"),
+        origem=origem,
+        destino=destino,
+        transporte=Transporte(via="RODOVIARIA"),
+        situacao=Situacao(veiculos_informados=False),
+    )
+    assert doc2.transporte.via == "RODOVIARIA"
+    assert doc2.situacao.veiculos_informados is False

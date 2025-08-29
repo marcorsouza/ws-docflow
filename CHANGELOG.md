@@ -1,3 +1,10 @@
+## v0.5.0 (2025-08-29)
+
+### Fix
+
+- **core**: alinhar contratos e defaults p/ mypy (extract, DeclaracaoInfo)
+- **ci**: corrigir indentação e sintaxe dos workflows YAML
+
 ## v0.4.1 (2025-08-29)
 
 ### Fix
