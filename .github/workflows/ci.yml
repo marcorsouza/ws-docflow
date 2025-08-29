@@ -1,76 +1,65 @@
 name: CI
 
-
 on:
-push:
-branches: [ "**" ]
-pull_request:
-
+  push:
+    branches: [ "**" ]
+  pull_request:
 
 jobs:
-test:
-name: Lint, Type-check & Tests (${{ matrix.os }})
-runs-on: ${{ matrix.os }}
-strategy:
-fail-fast: false
-matrix:
-os: [ubuntu-latest, windows-latest]
+  test:
+    name: Lint, Type-check & Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
+    steps:
+      - uses: actions/checkout@v4
 
-steps:
-- uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: "1.8.3"
 
-- name: Set up Python
-uses: actions/setup-python@v5
-with:
-python-version: "3.13"
+      - name: Cache Poetry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
 
+      - name: Install dependencies
+        run: |
+          poetry install --no-interaction --no-root
+          poetry run pre-commit install
 
-- name: Install Poetry
-uses: abatilo/actions-poetry@v3
-with:
-poetry-version: "1.8.3"
+      - name: Lint & Format (check-only)
+        run: |
+          poetry run ruff check .
+          poetry run black --check .
 
+      - name: Type check (mypy)
+        run: poetry run mypy src
 
-- name: Cache Poetry
-uses: actions/cache@v4
-with:
-path: |
-~/.cache/pypoetry
-~/.cache/pip
-key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest -q \
+            --cov=ws_docflow \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=pytest-junit.xml
 
-
-- name: Install dependencies
-run: |
-poetry install --no-interaction --no-root
-poetry run pre-commit install
-
-
-- name: Lint & Format (check-only)
-run: |
-poetry run ruff check .
-poetry run black --check .
-
-
-- name: Type check (mypy)
-run: poetry run mypy src
-
-
-- name: Run tests with coverage
-run: |
-poetry run pytest -q \
---cov=ws_docflow \
---cov-report=xml \
---cov-report=term-missing \
---junitxml=pytest-junit.xml
-
-
-- name: Upload coverage & junit artifacts
-uses: actions/upload-artifact@v4
-with:
-name: test-artifacts-${{ matrix.os }}
-path: |
-coverage.xml
-pytest-junit.xml
+      - name: Upload coverage & junit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts-${{ matrix.os }}
+          path: |
+            coverage.xml
+            pytest-junit.xml
