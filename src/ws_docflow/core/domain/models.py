@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Literal, Optional
+from typing import Annotated, List, Literal, Optional
 
 from pydantic import BaseModel, Field, StringConstraints
 
@@ -30,6 +31,7 @@ class UnidadeLocal(BaseModel):
 
     @classmethod
     def from_raw(cls, raw: str) -> "UnidadeLocal":
+        # Ex.: "1017700 - PORTO DE RIO GRANDE"
         m = re.match(r"^(\d{7})\s*-\s*(.+)$", raw.strip())
         if not m:
             raise ValueError(f"Formato inválido para Unidade Local: {raw!r}")
@@ -42,6 +44,7 @@ class RecintoAduaneiro(BaseModel):
 
     @classmethod
     def from_raw(cls, raw: str) -> "RecintoAduaneiro":
+        # Ex.: "0301304 - INST.PORT.MAR.ALF.USO PUBLICO-TECON RIO GRANDE-RIO GRANDE/RS"
         m = re.match(r"^(\d{7})\s*-\s*(.+)$", raw.strip())
         if not m:
             raise ValueError(f"Formato inválido para Recinto Aduaneiro: {raw!r}")
@@ -70,13 +73,32 @@ class Participante(BaseModel):
 
 
 class TotaisOrigem(BaseModel):
+    # Mantém compat com os PDFs que trazem "Tipo: ARMAZENAMENTO"
     tipo: Literal["ARMAZENAMENTO", "OUTRO", "DESCONHECIDO"] = "DESCONHECIDO"
     valor_total_usd: Optional[Decimal] = None
     valor_total_brl: Optional[Decimal] = None
 
 
 # ---------------------------------
-# Novos blocos
+# Novos blocos opcionais
+# ---------------------------------
+class Transporte(BaseModel):
+    # Ex.: "RODOVIARIA"
+    via: Optional[str] = None
+
+
+class Situacao(BaseModel):
+    # Campos opcionais pois podem não existir no extrato
+    solicitada_em: Optional[datetime] = None
+    solicitada_por_cpf: Optional[str] = None
+    registrada_em: Optional[datetime] = None
+    registrada_por_cpf: Optional[str] = None
+    veiculos_informados: Optional[bool] = None
+    dossies_vinculados: List[str] = []
+
+
+# ---------------------------------
+# Informações da declaração
 # ---------------------------------
 class DeclaracaoInfo(BaseModel):
     # defaults vazios para compatibilidade retro
@@ -84,10 +106,14 @@ class DeclaracaoInfo(BaseModel):
     tipo: str = Field("", description="Tipo da DTA, ex.: 'DTA - ENTRADA COMUM'")
 
 
+# ---------------------------------
+# Documento principal
+# ---------------------------------
 class DocumentoDados(BaseModel):
     # Compatibilidade retro: defaults permitem instanciar apenas com origem/destino
     declaracao: DeclaracaoInfo = Field(default=DeclaracaoInfo(numero="", tipo=""))
 
+    # Campo livre (string) para status textual quando existir (ex.: “CONCESSAO ...”)
     situacao_atual: str = ""
 
     origem: Localidade
@@ -95,3 +121,7 @@ class DocumentoDados(BaseModel):
     beneficiario: Optional[Participante] = None
     transportador: Optional[Participante] = None
     totais_origem: Optional[TotaisOrigem] = None
+
+    # Novos campos (opcionais; só aparecem no extrato quando existirem)
+    transporte: Optional[Transporte] = None
+    situacao: Optional[Situacao] = None
