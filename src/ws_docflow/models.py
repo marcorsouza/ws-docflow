@@ -2,13 +2,20 @@
 from __future__ import annotations
 
 import re
-from typing import Annotated
+from decimal import Decimal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, StringConstraints
 
-
 Codigo7 = Annotated[
     str, StringConstraints(pattern=r"^\d{7}$", min_length=7, max_length=7)
+]
+DocIdBR = Annotated[
+    str,
+    StringConstraints(
+        # aceita CNPJ 00.000.000/0000-00 e CPF 000.000.000-00
+        pattern=r"^(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2})$"
+    ),
 ]
 
 
@@ -18,9 +25,6 @@ class UnidadeLocal(BaseModel):
 
     @classmethod
     def from_raw(cls, raw: str) -> "UnidadeLocal":
-        """
-        Ex.: '1017700 - PORTO DE RIO GRANDE'
-        """
         m = re.match(r"^(\d{7})\s*-\s*(.+)$", raw.strip())
         if not m:
             raise ValueError(f"Formato inválido para Unidade Local: {raw!r}")
@@ -33,9 +37,6 @@ class RecintoAduaneiro(BaseModel):
 
     @classmethod
     def from_raw(cls, raw: str) -> "RecintoAduaneiro":
-        """
-        Ex.: '0301304 - INST.PORT.MAR.ALF.USO PUBLICO-TECON RIO GRANDE-RIO GRANDE/RS'
-        """
         m = re.match(r"^(\d{7})\s*-\s*(.+)$", raw.strip())
         if not m:
             raise ValueError(f"Formato inválido para Recinto Aduaneiro: {raw!r}")
@@ -47,6 +48,31 @@ class Localidade(BaseModel):
     recinto_aduaneiro: RecintoAduaneiro
 
 
+class Participante(BaseModel):
+    documento: DocIdBR  # CNPJ/CPF mascarado
+    nome: str
+
+    @classmethod
+    def from_raw(cls, raw: str) -> "Participante":
+        # Ex.: "90.102.609/0001-64 - TABONE INDUSTRIA E COMERCIO DE PLASTICOS LTDA"
+        m = re.match(
+            r"^(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2})\s*-\s*(.+)$",
+            raw.strip(),
+        )
+        if not m:
+            raise ValueError(f"Formato inválido para Participante: {raw!r}")
+        return cls(documento=m.group(1), nome=m.group(2))
+
+
+class TotaisOrigem(BaseModel):
+    tipo: Literal["ARMAZENAMENTO", "OUTRO", "DESCONHECIDO"] = "DESCONHECIDO"
+    valor_total_usd: Decimal | None = None
+    valor_total_brl: Decimal | None = None
+
+
 class DocumentoDados(BaseModel):
     origem: Localidade
     destino: Localidade
+    beneficiario: Participante | None = None
+    transportador: Participante | None = None
+    totais_origem: TotaisOrigem | None = None
