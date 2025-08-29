@@ -1,3 +1,9 @@
+## v0.4.0 (2025-08-29)
+
+### Feat
+
+- **parser**: extrair declaracao.numero, declaracao.tipo e situacao_atual
+
 ## v0.3.1 (2025-08-29)
 
 ### Refactor

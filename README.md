@@ -5,7 +5,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.  
+Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.
 Atualmente suporta extração de:
 
 - 🧾 Declaração (Número sem hífen + Tipo)
@@ -70,7 +70,7 @@ poetry install
 poetry run ws-docflow --version
 ```
 
-> 💡 No Windows, use **PowerShell**.  
+> 💡 No Windows, use **PowerShell**.
 > 💡 Para OCR futuro, instale também [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki).
 
 ---
@@ -185,7 +185,7 @@ poetry run cz bump --yes --increment patch --changelog
 git push origin main --tags
 ```
 
-> Padrão de tags: `vX.Y.Z` (configurado em `[tool.commitizen] tag_format = "v$version"`).  
+> Padrão de tags: `vX.Y.Z` (configurado em `[tool.commitizen] tag_format = "v$version"`).
 > Use **tags anotadas** (com `-a`) — é isso que o Commitizen usa para montar o changelog.
 
 ---
@@ -245,5 +245,5 @@ git push origin main
 
 ## 📄 Licença
 
-Este projeto é distribuído sob a licença MIT.  
+Este projeto é distribuído sob a licença MIT.
 Veja [LICENSE](LICENSE) para mais detalhes.

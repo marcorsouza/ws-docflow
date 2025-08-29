@@ -14,6 +14,7 @@ class ExtractDataUseCase:
       2) Passar o texto bruto ao DocParser
       3) Retornar um DocumentoDados validado (Pydantic)
     """
+
     extractor: TextExtractor
     parser: DocParser
 

@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import re
 from decimal import Decimal
-from typing import Annotated, Literal, Optional, Dict, Any
+from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, Field, StringConstraints
 
 # ---------------------------------
 # Tipos / Constraints
 # ---------------------------------
-Codigo7 = Annotated[str, StringConstraints(pattern=r"^\d{7}$", min_length=7, max_length=7)]
+Codigo7 = Annotated[
+    str, StringConstraints(pattern=r"^\d{7}$", min_length=7, max_length=7)
+]
 DocIdBR = Annotated[
     str,
     StringConstraints(
@@ -17,6 +19,7 @@ DocIdBR = Annotated[
         pattern=r"^(\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2})$"
     ),
 ]
+
 
 # ---------------------------------
 # Modelos básicos

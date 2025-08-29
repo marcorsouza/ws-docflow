@@ -149,7 +149,9 @@ class BrDtaParser(DocParser):
         t = _TOTAIS_REGEX.search(text)
         if t:
             tipo_raw = t.group("tipo").strip().upper()
-            tipo_tot = "ARMAZENAMENTO" if "ARMAZENAMENTO" in tipo_raw else "DESCONHECIDO"
+            tipo_tot = (
+                "ARMAZENAMENTO" if "ARMAZENAMENTO" in tipo_raw else "DESCONHECIDO"
+            )
 
             usd = brl = None
             try:
