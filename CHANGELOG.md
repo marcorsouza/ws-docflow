@@ -1,5 +1,9 @@
 ## v0.5.2 (2025-08-29)
 
+### Docs
+
+- **readme**: atualizar instruções com parser de extrato e novos campos
+
 ## v0.5.1 (2025-08-29)
 
 ### Feat
