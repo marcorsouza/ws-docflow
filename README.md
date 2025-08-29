@@ -1,9 +1,9 @@
 # 📦 ws-docflow
-
+[![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)
 [![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/)
 [![Poetry](https://img.shields.io/badge/Poetry-managed-informational)](https://python-poetry.org/)
-[![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 
 Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.
 Atualmente suporta extração de:
