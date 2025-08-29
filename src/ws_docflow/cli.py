@@ -1,9 +1,10 @@
 # src/ws_docflow/cli.py
 from __future__ import annotations
 
+import json
 import typer
+from .parser import extract_from_pdf
 
-# mostra ajuda quando roda sem args e trata erros de uso melhor
 app = typer.Typer(
     help="CLI para extração e validação de dados de PDFs (ws-docflow).",
     no_args_is_help=True,
@@ -13,7 +14,6 @@ app = typer.Typer(
 
 def _version_callback(value: bool):
     if value:
-        # coloque a versão real aqui quando tiver
         typer.echo("ws-docflow 0.1.0")
         raise typer.Exit(code=0)
 
@@ -24,25 +24,17 @@ def main(
         False,
         "--version",
         "-V",
-        help="Mostra a versão e sai.",
+        help="Versão",
         callback=_version_callback,
         is_eager=True,
     ),
-):
-    """Comandos do ws-docflow."""
-    # callback raiz não precisa retornar nada
+): ...
 
 
 @app.command("parse")
-def parse_cmd(
-    pdf_path: str = typer.Argument(..., help="Caminho do arquivo PDF a processar."),
-):
+def parse_cmd(pdf_path: str = typer.Argument(..., help="Caminho do arquivo PDF")):
     """
-    Extrai dados de Origem/Destino de um arquivo PDF.
-    (Stub inicial: apenas imprime o caminho recebido)
+    Extrai dados de Origem/Destino de um arquivo PDF e imprime JSON.
     """
-    typer.echo(f"[ws-docflow] Processando PDF: {pdf_path}")
-
-
-if __name__ == "__main__":
-    app()
+    doc = extract_from_pdf(pdf_path)
+    typer.echo(json.dumps(doc.model_dump(), ensure_ascii=False, indent=2))
