@@ -1,3 +1,9 @@
+## v0.5.1 (2025-08-29)
+
+### Feat
+
+- **core**: atualizar models com blocos Transporte e Situacao
+
 ## v0.5.0 (2025-08-29)
 
 ### Fix
