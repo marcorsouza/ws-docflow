@@ -1,6 +1,6 @@
 [project]
 name = "ws-docflow"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = [
     {name = "Marco Souza",email = "marco.rsouza@gmail.com"}
@@ -37,3 +37,11 @@ commitizen = "^4.8.3"
 
 [project.scripts]
 ws-docflow = "ws_docflow.cli:app"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.2.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version"
+]
