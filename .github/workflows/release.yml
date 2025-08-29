@@ -1,9 +1,6 @@
 name: Release (cz bump)
 
 on:
-  push:
-    branches: [ "main" ]
-  # opcional: permitir disparo manual
   workflow_dispatch:
 
 jobs:
@@ -11,7 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,9 +25,7 @@ jobs:
           poetry-version: "1.8.3"
 
       - name: Install deps
-        run: |
-          poetry install --no-interaction
-          poetry run pre-commit run --all-files
+        run: poetry install --no-interaction
 
       - name: Conventional bump (Commitizen)
         env:
@@ -40,9 +34,14 @@ jobs:
           GIT_COMMITTER_NAME: "github-actions[bot]"
           GIT_COMMITTER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
         run: |
-          poetry run cz bump --yes --changelog
-          git push
-          git push --tags
+          set -e
+          # evita falhar se não houver nada para bump
+          if poetry run cz bump --yes --changelog; then
+            git push
+            git push --tags
+          else
+            echo "cz bump não aplicou alterações (sem commits convencionais desde a última tag)."
+          fi
 
       - name: Create GitHub Release from latest tag
         uses: softprops/action-gh-release@v2
