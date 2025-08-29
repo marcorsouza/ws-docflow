@@ -19,35 +19,10 @@ Atualmente suporta extração dos seguintes blocos:
 - [x] CLI `parse` funcional (JSON)
 - [x] Testes unitários cobrindo models, parser e CLI
 - [x] Refatoração para Clean Architecture (core/infra/cli)
+- [x] Versionamento semântico com Commitizen
 - [ ] Exportar em múltiplos formatos (`--out`, `--format json|csv`)
 - [ ] OCR (opcional, via pytesseract)
 - [ ] Integração Contínua (GitHub Actions)
-
----
-
-## Roadmap / Próximas Etapas
-
-### 1. CLI
-- [ ] Adicionar opção `--out <arquivo>` para salvar resultado
-- [ ] Suporte a `--format json|csv`
-- [ ] Melhorar UX com **rich** (logs, cores, tabela de resultados)
-- [ ] Comando `parse-batch <dir>` para processar múltiplos PDFs
-
-### 2. OCR (Opcional)
-- [ ] Integrar **pytesseract** para PDFs escaneados
-- [ ] Flag `--ocr` para fallback automático
-
-### 3. Testes
-- [ ] Fixtures de PDFs reais/mascarados
-- [ ] Casos com variação de layout (acentos, hífenes diferentes, linhas em branco)
-- [ ] Cobertura com `pytest-cov`
-
-### 4. Integração Contínua
-- [ ] Configurar **GitHub Actions** para rodar:
-  - Ruff (lint)
-  - Black (format)
-  - Mypy (tipagem)
-  - Pytest (testes + cobertura)
 
 ---
 
@@ -64,6 +39,25 @@ O projeto segue princípios de **Clean Architecture / Ports & Adapters**, separa
   - `parsers/` → parsers específicos (ex.: `BrDtaParser`)
 - **cli** → Entrada de linha de comando (Typer)
 
+### Estrutura de diretórios
+
+```
+src/ws_docflow/
+├─ cli/
+│  └─ app.py
+├─ core/
+│  ├─ domain/
+│  │  └─ models.py
+│  ├─ ports.py
+│  └─ use_cases/
+│     └─ extract_data.py
+└─ infra/
+   ├─ pdf/
+   │  └─ pdfplumber_extractor.py
+   └─ parsers/
+      └─ br_dta_parser.py
+```
+
 ---
 
 ## Roadmap / Próximas Etapas
@@ -91,7 +85,6 @@ O projeto segue princípios de **Clean Architecture / Ports & Adapters**, separa
   - Pytest (testes + cobertura)
 
 ---
-
 
 ## Como rodar o parser
 
@@ -135,3 +128,11 @@ Saída (exemplo fictício):
 poetry run pytest -v
 poetry run pytest --cov=ws_docflow --cov-report=term-missing
 ```
+
+---
+
+## Versionamento
+
+Este projeto segue [Conventional Commits](https://www.conventionalcommits.org/)
+e utiliza [Commitizen](https://commitizen-tools.github.io/commitizen/) para versionamento semântico.
+Veja o histórico completo em [CHANGELOG.md](CHANGELOG.md).
