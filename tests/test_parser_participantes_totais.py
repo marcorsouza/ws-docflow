@@ -1,5 +1,4 @@
-# tests/test_parser_participantes_totais.py
-from ws_docflow.parser import extract_from_text
+from ws_docflow.infra.parsers.br_dta_parser import BrDtaParser
 
 
 def test_participantes_e_totais():
@@ -20,7 +19,8 @@ def test_participantes_e_totais():
     Valor Total do Trânsito em Dólar Americano: 1.611.283,47
     Valor Total do Trânsito em Real: 9.198.334,00
     """
-    doc = extract_from_text(text)
+    parser = BrDtaParser()
+    doc = parser.parse(text)
 
     assert doc.beneficiario is not None
     assert doc.beneficiario.documento == "90.102.609/0001-64"

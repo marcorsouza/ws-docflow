@@ -36,7 +36,7 @@ commitizen = "^4.8.3"
 
 
 [project.scripts]
-ws-docflow = "ws_docflow.cli:app"
+ws-docflow = "ws_docflow.cli.app:app"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
