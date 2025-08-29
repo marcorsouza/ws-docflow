@@ -1,3 +1,9 @@
+## v0.4.1 (2025-08-29)
+
+### Fix
+
+- **pdf**: implementar PdfPlumberExtractor.extract_text para a CLI
+
 ## v0.4.0 (2025-08-29)
 
 ### Feat
