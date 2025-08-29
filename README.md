@@ -1,98 +1,86 @@
-# ws-docflow
+# 📦 ws-docflow
 
-Pipeline de extração e validação de dados a partir de PDFs aduaneiros.
-Atualmente suporta extração dos seguintes blocos:
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/)  
+[![Poetry](https://img.shields.io/badge/Poetry-managed-informational)](https://python-poetry.org/)  
+[![CI](https://img.shields.io/github/actions/workflow/status/marcorsouza/ws-docflow/ci.yml?label=CI)](https://github.com/marcorsouza/ws-docflow/actions)  
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- Origem (Unidade Local + Recinto Aduaneiro)
-- Destino (Unidade Local + Recinto Aduaneiro)
-- Beneficiário (CNPJ/CPF + Nome)
-- Transportador (CNPJ/CPF + Nome)
-- Tratamento na Origem Totais (Tipo, Valor USD, Valor BRL)
+Pipeline de **extração e validação de dados a partir de PDFs aduaneiros**, baseado em **Clean Architecture**.  
+Atualmente suporta extração de:
 
----
-
-## Status
-- [x] Estrutura inicial (Poetry, venv, Git)
-- [x] Qualidade (ruff/black/mypy/pre-commit)
-- [x] Models e validações Pydantic
-- [x] Parser de Origem/Destino, Participantes e Totais
-- [x] CLI `parse` funcional (JSON)
-- [x] Testes unitários cobrindo models, parser e CLI
-- [x] Refatoração para Clean Architecture (core/infra/cli)
-- [x] Versionamento semântico com Commitizen
-- [ ] Exportar em múltiplos formatos (`--out`, `--format json|csv`)
-- [ ] OCR (opcional, via pytesseract)
-- [ ] Integração Contínua (GitHub Actions)
+- 📍 Origem (Unidade Local + Recinto Aduaneiro)  
+- 🎯 Destino (Unidade Local + Recinto Aduaneiro)  
+- 🏢 Beneficiário (CNPJ/CPF + Nome)  
+- 🚢 Transportador (CNPJ/CPF + Nome)  
+- 💰 Totais de origem (Tipo, Valor USD, Valor BRL)  
 
 ---
 
-## Arquitetura
+## ✨ Features
 
-O projeto segue princípios de **Clean Architecture / Ports & Adapters**, separando camadas:
+- ✅ Parser BR-DTA baseado em **regex line-based**  
+- ✅ CLI simples via [Typer](https://typer.tiangolo.com/)  
+- ✅ Models e validações com [Pydantic v2](https://docs.pydantic.dev/)  
+- ✅ Lint/format/tipos com `ruff`, `black`, `mypy`, `pre-commit`  
+- ✅ Testes unitários com `pytest` + cobertura  
+- ✅ Versionamento semântico com **Commitizen**  
+- 🔜 Exportar múltiplos formatos (`--out`, `--format json|csv`)  
+- 🔜 OCR opcional (via **pytesseract**)  
+- 🔜 Integração Contínua com **GitHub Actions**  
 
-- **core** → Regras de negócio e contratos
-  - `domain/` → modelos (Pydantic)
-  - `ports.py` → interfaces (Protocols) para extratores/parsers
-  - `use_cases/` → orquestrações (ex.: `ExtractDataUseCase`)
-- **infra** → Implementações dos ports
-  - `pdf/` → extratores de texto (ex.: `PdfPlumberExtractor`)
-  - `parsers/` → parsers específicos (ex.: `BrDtaParser`)
-- **cli** → Entrada de linha de comando (Typer)
+---
 
-### Estrutura de diretórios
+## 🏗 Arquitetura
+
+O projeto segue **Clean Architecture / Ports & Adapters**:
 
 ```
 src/ws_docflow/
-├─ cli/
+├─ cli/                 # entrada CLI (Typer)
 │  └─ app.py
-├─ core/
-│  ├─ domain/
-│  │  └─ models.py
-│  ├─ ports.py
-│  └─ use_cases/
-│     └─ extract_data.py
-└─ infra/
-   ├─ pdf/
-   │  └─ pdfplumber_extractor.py
-   └─ parsers/
-      └─ br_dta_parser.py
+├─ core/                # regras de negócio / contratos
+│  ├─ domain/           # entidades (Pydantic)
+│  ├─ ports.py          # interfaces (extratores/parsers)
+│  └─ use_cases/        # orquestrações (ex.: ExtractDataUseCase)
+└─ infra/               # implementações concretas
+   ├─ pdf/              # extratores (ex.: PdfPlumberExtractor)
+   └─ parsers/          # parsers (ex.: BrDtaParser)
 ```
 
 ---
 
-## Roadmap / Próximas Etapas
+## 🚀 Instalação rápida
 
-### 1. CLI
-- [ ] Adicionar opção `--out <arquivo>` para salvar resultado
-- [ ] Suporte a `--format json|csv`
-- [ ] Melhorar UX com **rich** (logs, cores, tabela de resultados)
-- [ ] Comando `parse-batch <dir>` para processar múltiplos PDFs
+```bash
+# 1. Clonar repositório
+git clone https://github.com/marcorsouza/ws-docflow.git
+cd ws-docflow
 
-### 2. OCR (Opcional)
-- [ ] Integrar **pytesseract** para PDFs escaneados
-- [ ] Flag `--ocr` para fallback automático
+# 2. Configurar Python 3.13
+pyenv install 3.13.0
+pyenv local 3.13.0
 
-### 3. Testes
-- [ ] Fixtures de PDFs reais/mascarados
-- [ ] Casos com variação de layout (acentos, hífenes diferentes, linhas em branco)
-- [ ] Cobertura com `pytest-cov`
+# 3. Instalar dependências
+pip install poetry
+poetry install
 
-### 4. Integração Contínua
-- [ ] Configurar **GitHub Actions** para rodar:
-  - Ruff (lint)
-  - Black (format)
-  - Mypy (tipagem)
-  - Pytest (testes + cobertura)
+# 4. Testar CLI
+poetry run ws-docflow --version
+```
+
+> 💡 No Windows, use **PowerShell**.  
+> 💡 Para OCR futuro, instale também [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki).
 
 ---
 
-## Como rodar o parser
+## 🖥️ Como rodar
 
 ```bash
+# rodar parser
 poetry run ws-docflow parse caminho/do/arquivo.pdf
 ```
 
-Saída (exemplo fictício):
+Exemplo de saída:
 
 ```json
 {
@@ -122,17 +110,55 @@ Saída (exemplo fictício):
 
 ---
 
-## Como rodar os testes
+## 🧪 Testes e qualidade
 
 ```bash
+# rodar testes
 poetry run pytest -v
 poetry run pytest --cov=ws_docflow --cov-report=term-missing
+
+# rodar lint/format/tipos
+poetry run pre-commit run --all-files
 ```
 
 ---
 
-## Versionamento
+## 📌 Roadmap
 
-Este projeto segue [Conventional Commits](https://www.conventionalcommits.org/)
-e utiliza [Commitizen](https://commitizen-tools.github.io/commitizen/) para versionamento semântico.
-Veja o histórico completo em [CHANGELOG.md](CHANGELOG.md).
+- [ ] `--out <arquivo>` e `--format json|csv`  
+- [ ] `parse-batch <dir>` para múltiplos PDFs  
+- [ ] Logs coloridos com **rich**  
+- [ ] OCR com fallback pytesseract  
+- [ ] Fixtures com PDFs mascarados  
+- [ ] CI (Ruff, Black, Mypy, Pytest, cobertura)  
+
+---
+
+## 🔗 Contribuição
+
+1. Crie branch a partir de `main`:  
+   ```bash
+   git checkout -b feature/sua-feature
+   ```
+2. Rode testes e pre-commit:  
+   ```bash
+   poetry run pytest
+   poetry run pre-commit run --all-files
+   ```
+3. Commits no padrão [Conventional Commits](https://www.conventionalcommits.org/)  
+4. Abra um PR — template disponível em `.github/pull_request_template.md`
+
+---
+
+## 📜 Versionamento
+
+- Versionamento semântico com **Commitizen**  
+- Histórico no [CHANGELOG.md](CHANGELOG.md)  
+- Tags no formato `vX.Y.Z`
+
+---
+
+## 📄 Licença
+
+Este projeto é distribuído sob a licença MIT.  
+Veja [LICENSE](LICENSE) para mais detalhes.
