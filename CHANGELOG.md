@@ -1,3 +1,13 @@
+## v0.7.0 (2025-08-29)
+
+### Feat
+
+- **logging**: adicionar configuração Rich com emojis e níveis via env
+
+### Fix
+
+- **api**: expor ExtractDataUseCase em main para compatibilidade com testes
+
 ## v0.6.0 (2025-08-29)
 
 ### Feat

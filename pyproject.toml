@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ws-docflow"
-version = "0.6.0"
+version = "0.7.0"
 description = "Pipeline de extração e validação de dados a partir de PDFs aduaneiros (Clean Architecture)."
 authors = ["Marco Souza <marco.rsouza@gmail.com>"]
 readme = "README.md"
@@ -43,7 +43,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.6.0"
+version = "0.7.0"
 tag_format = "v$version"
 version_files = ["pyproject.toml:version"]
 update_changelog = true
