@@ -1,9 +1,5 @@
 ## v0.8.1 (2025-08-30)
 
-### Docs
-- **readme**: adicionar seção “👨‍💻 Para Devs” com link para `ROADMAP_DEV.md`
-- **dev**: criar `ROADMAP_DEV.md` com práticas de engenharia, observabilidade, testes, CI/CD e priorização
-
 ### Test
 - **cli**: testes com `CliRunner` cobrindo caminho feliz e erro (PDF inválido)
 - **api**: testes de `POST /api/parse` (ok/sem arquivo) e `POST /api/parse-b64` (payload inválido, aceita 400/415/422/500)
@@ -23,6 +19,10 @@
 
 
 ## v0.8.0 (2025-08-29)
+
+### Docs
+- **readme**: adicionar seção “👨‍💻 Para Devs” com link para `ROADMAP_DEV.md`
+- **dev**: criar `ROADMAP_DEV.md` com práticas de engenharia, observabilidade, testes, CI/CD e priorização
 
 ## v0.7.0 (2025-08-29)
 
