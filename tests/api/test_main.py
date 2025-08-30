@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import ws_docflow.api.main as api_main
+import ws_docflow.api.routes as api_routes
 
 
 class FakeDoc:
@@ -87,11 +88,7 @@ class FakeUC:
 
 @pytest.fixture(autouse=True)
 def patch_use_case(monkeypatch):
-    """
-    Substitui ExtractDataUseCase no módulo da API por FakeUC
-    para tornar os testes determinísticos e independentes do pdfplumber.
-    """
-    monkeypatch.setattr(api_main, "ExtractDataUseCase", FakeUC)
+    monkeypatch.setattr(api_routes, "ExtractDataUseCase", FakeUC)
     yield
 
 
