@@ -1,5 +1,27 @@
 ## v0.8.1 (2025-08-30)
 
+### Docs
+- **readme**: adicionar seção “👨‍💻 Para Devs” com link para `ROADMAP_DEV.md`
+- **dev**: criar `ROADMAP_DEV.md` com práticas de engenharia, observabilidade, testes, CI/CD e priorização
+
+### Test
+- **cli**: testes com `CliRunner` cobrindo caminho feliz e erro (PDF inválido)
+- **api**: testes de `POST /api/parse` (ok/sem arquivo) e `POST /api/parse-b64` (payload inválido, aceita 400/415/422/500)
+- **core/use_cases**: fallback entre parsers (primeiro falha com exceção; segundo reconhece)
+- **infra/pdf**: mock de `pdfplumber.open` (texto normal e sem texto)
+- Aumentar cobertura total e estabilizar execuções locais/CI
+
+### Chore
+- **pre-commit**: adicionar hook `coverage-gate` (pytest + coverage)
+  - Bloqueia commit se `<85%`, avisa se `≥85% e <90%`, passa se `≥90%`
+  - Variante Windows-safe do script (`hooks/check_coverage_windows_safe.py`) sem emojis/UTF-8
+- **ci**: gate de cobertura global (`--cov-fail-under=85`) e diff-coverage (≥90% em linhas alteradas) com `diff-cover`
+- **tooling**: instruções para `pre-commit migrate-config` (remover estágios legados)
+
+### Fix
+- **tests**: ajustar expectativas (fallback exige exceção no primeiro parser; `/api/parse-b64` pode retornar 415)
+
+
 ## v0.8.0 (2025-08-29)
 
 ## v0.7.0 (2025-08-29)
