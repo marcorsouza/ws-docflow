@@ -237,6 +237,12 @@ poetry run pre-commit run --all-files
 
 ---
 
+
+---
+
+## 👨‍💻 Para Devs
+
+Para detalhes técnicos e boas práticas de engenharia, veja o [ROADMAP_DEV.md](ROADMAP_DEV.md).
 ## 🔗 Contribuição
 
 1. Crie branch a partir de `main`:
