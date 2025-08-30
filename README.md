@@ -32,6 +32,7 @@ Atualmente suporta extração de:
 - ✅ Testes unitários com `pytest` + cobertura
 - ✅ Versionamento semântico com **Commitizen**
 - ✅ Integração Contínua com **GitHub Actions**
+- ✅ Logs coloridos com **rich**
 - 🔜 Exportar múltiplos formatos (`--out`, `--format json|csv`)
 - 🔜 OCR opcional (via **pytesseract**)
 
@@ -231,7 +232,6 @@ poetry run pre-commit run --all-files
 
 - [ ] `--out <arquivo>` e `--format json|csv`
 - [ ] `parse-batch <dir>` para múltiplos PDFs
-- [ ] Logs coloridos com **rich**
 - [ ] OCR com fallback pytesseract
 - [ ] Fixtures com PDFs mascarados
 
