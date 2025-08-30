@@ -15,3 +15,12 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: coverage-gate
+        name: coverage-gate (pytest --cov)
+        entry: python hooks/check_coverage.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
