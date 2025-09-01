@@ -1,6 +1,6 @@
 # 🧭 Roadmap de Engenharia (DEV)
 
-> Documento vivo com prioridades técnicas para evolução do **ws-docflow**. Itens estão em formato de checklist para facilitar acompanhamento. 
+> Documento vivo com prioridades técnicas para evolução do **ws-docflow**. Itens estão em formato de checklist para facilitar acompanhamento.
 
 ---
 
@@ -163,8 +163,8 @@
 ---
 
 ## 📌 Priorização imediata (próximo ciclo)
-1) Observabilidade mínima (logs estruturados + correlation id)  
-2) Testes de contratos + fixtures mascaradas  
-3) CLI `--out`/`--format` e `parse-batch`  
-4) CI com matriz 3.10→3.13 + coverage gate/diff-cover  
-5) Publicação de Docker image no GHCR  
+1) Observabilidade mínima (logs estruturados + correlation id)
+2) Testes de contratos + fixtures mascaradas
+3) CLI `--out`/`--format` e `parse-batch`
+4) CI com matriz 3.10→3.13 + coverage gate/diff-cover
+5) Publicação de Docker image no GHCR
