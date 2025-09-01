@@ -13,4 +13,5 @@ htmlcov/
 "@ | Out-File -Encoding UTF8 .gitignore
 
 resultado.json
+resultado.csv
 coverage.xml
