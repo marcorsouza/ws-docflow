@@ -15,9 +15,9 @@ import typer
 from ws_docflow.infra.pdf.pdfplumber_extractor import PdfPlumberExtractor
 from ws_docflow.infra.parsers.br_dta_parser import BrDtaParser
 from ws_docflow.infra.parsers.br_dta_extrato_parser import BrDtaExtratoParser
-from ws_docflow.core.use_cases.extract_data import (
-    ExtractDataUseCase,
-)  # símbolo local p/ patch via app_mod
+
+# ⚠️ Use SEMPRE o símbolo local (permite monkeypatch nos testes)
+from ws_docflow.core.use_cases.extract_data import ExtractDataUseCase
 
 # --- Logger (Rich) -----------------------------------------------------------
 try:
@@ -72,6 +72,7 @@ except Exception:
         transportador = payload.get("transportador", {}) or {}
         totais = payload.get("totais_origem", {}) or {}
         row: dict[str, Any] = {
+            # Origem
             "origem_unidade_local_codigo": (origem.get("unidade_local") or {}).get(
                 "codigo"
             ),
@@ -84,6 +85,7 @@ except Exception:
             "origem_recinto_descricao": (origem.get("recinto_aduaneiro") or {}).get(
                 "descricao"
             ),
+            # Destino
             "destino_unidade_local_codigo": (destino.get("unidade_local") or {}).get(
                 "codigo"
             ),
@@ -96,10 +98,12 @@ except Exception:
             "destino_recinto_descricao": (destino.get("recinto_aduaneiro") or {}).get(
                 "descricao"
             ),
+            # Participantes
             "beneficiario_documento": beneficiario.get("documento"),
             "beneficiario_nome": beneficiario.get("nome"),
             "transportador_documento": transportador.get("documento"),
             "transportador_nome": transportador.get("nome"),
+            # Totais
             "totais_tipo": totais.get("tipo"),
             "totais_valor_total_usd": totais.get("valor_total_usd"),
             "totais_valor_total_brl": totais.get("valor_total_brl"),
@@ -164,22 +168,8 @@ def parse_cmd(
         extractor = PdfPlumberExtractor()
         parsers = [BrDtaExtratoParser(), BrDtaParser()]
 
-        # --- Compat com dois estilos de teste ---
-        # 1) Quando passaram 'dummy.pdf' (arquivo NÃO existe), respeitar patch direto em app_mod.ExtractDataUseCase (lambda → FakeUC)
-        # 2) Quando criam um arquivo real e usam monkeypatch.setattr no core, preferir a classe "limpa" do core
-        pdf_exists = Path(pdf_path).exists()
-        if pdf_exists:
-            # pega a classe fresca do core (respeita monkeypatch de método)
-            from ws_docflow.core.use_cases.extract_data import (
-                ExtractDataUseCase as CoreUC,
-            )
-
-            uc = CoreUC(extractor, parsers)
-        else:
-            # usa o símbolo do próprio módulo (permite override por atribuição via app_mod.ExtractDataUseCase = lambda...)
-            UC = ExtractDataUseCase
-            uc = UC(extractor, parsers) if callable(UC) else UC(extractor, parsers)
-        # -----------------------------------------
+        # ✅ SEM heurística: usa sempre o símbolo local (patchável em app_mod.ExtractDataUseCase)
+        uc = ExtractDataUseCase(extractor, parsers)
 
         doc = uc.run(pdf_path)
 
@@ -201,6 +191,7 @@ def parse_cmd(
         try:
             data = model_dump(**kwargs)
         except TypeError:
+            # fallback p/ dummies de teste que não aceitam kwargs
             data = model_dump()
 
         log.info("[green]✅[/] Extração concluída com sucesso")
@@ -224,6 +215,131 @@ def parse_cmd(
 
         typer.secho(
             f"❌ [ws-docflow] Falha ao processar '{pdf_path}': {exc}",
+            fg=typer.colors.RED,
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+
+@app.command("parse-batch")
+def parse_batch_cmd(
+    dir_path: Path = typer.Argument(..., help="Diretório contendo arquivos PDF"),
+    out: Optional[Path] = typer.Option(
+        None, "--out", help="Arquivo de saída (JSON/CSV)"
+    ),
+    fmt: str = typer.Option(
+        "json",
+        "--format",
+        help="Formato de saída (json|csv)",
+        case_sensitive=False,
+    ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Aumenta verbosidade (DEBUG)"
+    ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Reduz verbosidade (WARNING)"
+    ),
+):
+    """
+    Processa todos os PDFs de um diretório em batch.
+    Saída: JSON array (padrão) ou CSV (--format csv).
+    - Em caso de erro em um PDF, loga e segue para o próximo.
+    - Retorna exit code 0 se ao menos um PDF foi processado com sucesso.
+    """
+    _set_level(verbose, quiet)
+
+    fmt = fmt.lower()
+    if fmt not in {"json", "csv"}:
+        typer.secho("Formato inválido. Use 'json' ou 'csv'.", fg=typer.colors.RED)
+        raise typer.Exit(code=2)
+
+    try:
+        if not dir_path.exists() or not dir_path.is_dir():
+            raise FileNotFoundError(f"Diretório inválido: {dir_path}")
+
+        log.info("[bold cyan]🚀 ws-docflow[/] iniciando parse-batch")
+        pdf_files = sorted(dir_path.glob("*.pdf"))
+        log.debug(f"Arquivos encontrados: {len(pdf_files)}")
+
+        extractor = PdfPlumberExtractor()
+        parsers = [BrDtaExtratoParser(), BrDtaParser()]
+        # ✅ SEM heurística: símbolo local patchável
+        uc = ExtractDataUseCase(extractor, parsers)
+
+        results: list[dict[str, Any]] = []
+        successes = 0
+
+        for pdf in pdf_files:
+            try:
+                doc = uc.run(str(pdf))
+
+                model_dump = getattr(doc, "model_dump", None)
+                if not callable(model_dump):
+                    raise TypeError("Objeto retornado não possui método model_dump()")
+
+                sig = inspect.signature(model_dump)
+                params = sig.parameters
+                kwargs: dict[str, Any] = {}
+                if "mode" in params:
+                    kwargs["mode"] = "json"
+                if "exclude_none" in params:
+                    kwargs["exclude_none"] = True
+                if "exclude_unset" in params:
+                    kwargs["exclude_unset"] = True
+
+                try:
+                    data = model_dump(**kwargs)
+                except TypeError:
+                    data = model_dump()
+
+                results.append(data)
+                successes += 1
+                log.debug(f"[green]OK[/] {pdf.name}")
+            except Exception as exc:
+                log.error(f"[red]Falha[/] em {pdf.name}: {exc}")
+
+        # Renderização
+        if fmt == "json":
+            rendered = to_json_string(results)
+            if out:
+                out.parent.mkdir(parents=True, exist_ok=True)
+                out.write_text(rendered, encoding="utf-8")
+                typer.secho(f"Saída JSON gravada em: {out}", fg=typer.colors.GREEN)
+            else:
+                typer.echo(rendered)
+        else:
+            # CSV: uma linha por documento
+            try:
+                from ws_docflow.cli.formatters import flatten_for_csv, write_csv_file  # type: ignore
+
+                rows = [flatten_for_csv(d)[1] for d in results]
+                if out:
+                    out.parent.mkdir(parents=True, exist_ok=True)
+                    write_csv_file(str(out), rows)
+                    typer.secho(f"Saída CSV gravada em: {out}", fg=typer.colors.GREEN)
+                else:
+                    buf = io.StringIO(newline="")
+                    if rows:
+                        fieldnames = list(rows[0].keys())
+                        writer = csv.DictWriter(buf, fieldnames=fieldnames)
+                        writer.writeheader()
+                        writer.writerows(rows)
+                    typer.echo(buf.getvalue())
+            except Exception as exc:
+                raise RuntimeError(f"Falha ao gerar CSV: {exc}") from exc
+
+        # Exit code: 0 se houve ao menos 1 sucesso; 1 caso contrário
+        raise typer.Exit(code=0 if successes > 0 else 1)
+
+    except typer.Exit:
+        raise
+    except Exception as exc:
+        if logging.getLogger().level <= logging.DEBUG:
+            log.exception(f"🐞 Erro no parse-batch '{dir_path}': {exc}")
+        else:
+            log.error(f"[red]🚨 Falha no parse-batch[/] '{dir_path}': {exc}")
+        typer.secho(
+            f"❌ [ws-docflow] Falha no parse-batch '{dir_path}': {exc}",
             fg=typer.colors.RED,
             err=True,
         )
