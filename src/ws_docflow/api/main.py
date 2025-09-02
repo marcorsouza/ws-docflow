@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ws_docflow.infra.logging import logger as log
 from .routes import router as api_router  # rotas em arquivo separado
+from .routes import health_router
 
 app = FastAPI(
     title="ws-docflow API",
@@ -41,3 +42,4 @@ async def log_requests(request: Request, call_next):
 
 # monta /api/*
 app.include_router(api_router, prefix="/api")
+app.include_router(health_router)

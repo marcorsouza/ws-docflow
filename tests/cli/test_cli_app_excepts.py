@@ -15,6 +15,7 @@ class FakeDocTypeErrorOnce:
     Simula um model_dump que levanta TypeError quando é chamado com kwargs,
     e funciona quando chamado sem kwargs (caminho do except TypeError -> fallback).
     """
+
     def __init__(self):
         self.called = 0
 
@@ -44,7 +45,9 @@ def test_parse_model_dump_typeerror_fallback(monkeypatch, tmp_path: Path):
     assert data["via"] == "fallback"
 
 
-def test_parse_object_without_model_dump_raises_clean_error(monkeypatch, tmp_path: Path):
+def test_parse_object_without_model_dump_raises_clean_error(
+    monkeypatch, tmp_path: Path
+):
     pdf = tmp_path / "ok2.pdf"
     pdf.write_bytes(b"%PDF-1.4\n")
 

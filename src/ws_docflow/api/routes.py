@@ -5,7 +5,7 @@ import os
 import tempfile
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_validator, ConfigDict
 
@@ -15,7 +15,40 @@ from ws_docflow.infra.parsers.br_dta_parser import BrDtaParser
 from ws_docflow.infra.parsers.br_dta_extrato_parser import BrDtaExtratoParser
 from ws_docflow.core.use_cases.extract_data import ExtractDataUseCase
 
+# Routers
 router = APIRouter(tags=["Parse"])
+health_router = APIRouter(tags=["infra"])
+
+# --- Prometheus (opcional) ---------------------------------------------------
+HAS_PROM = False
+try:
+    from prometheus_client import (
+        CONTENT_TYPE_LATEST,
+        CollectorRegistry,
+        generate_latest,
+        Counter,
+        Histogram,
+        PROCESS_COLLECTOR,
+        PLATFORM_COLLECTOR,
+    )
+
+    HAS_PROM = True
+    # Métricas básicas (se quiser, incremente nos handlers depois)
+    REQUEST_COUNT = Counter(
+        "ws_docflow_requests_total",
+        "Total de requisições HTTP",
+        ["route", "method", "status"],
+    )
+    REQUEST_LATENCY = Histogram(
+        "ws_docflow_request_latency_seconds",
+        "Latência das requisições HTTP",
+        ["route", "method"],
+    )
+except Exception:
+    # Sem prometheus_client instalado: /metrics responderá 501
+    REQUEST_COUNT = None  # type: ignore
+    REQUEST_LATENCY = None  # type: ignore
+# ---------------------------------------------------------------------------
 
 
 # -------- Schemas --------
@@ -24,7 +57,7 @@ class ParseBase64Request(BaseModel):
         json_schema_extra={
             "example": {
                 "filename": "documento.pdf",
-                "content_base64": "JVBERi0xLjcKJcTl8uXrp/Og0MTGCjEgMCBvYmoK...",
+                "content_base64": "JVBERi0xLjcKJcTl8uXrp/Og0MTGCjEgMCBvYmoK...",  # exemplo ilustrativo
             }
         }
     )
@@ -44,7 +77,8 @@ class ParseBase64Request(BaseModel):
 # -------- Core helpers --------
 def _parse_with_single(source: str | bytes, parser) -> dict:
     extractor = PdfPlumberExtractor()
-    uc = ExtractDataUseCase(extractor, parser)
+    # NOTE: ExtractDataUseCase espera uma LISTA de parsers
+    uc = ExtractDataUseCase(extractor, [parser])
     doc = uc.run(source)
     return doc.model_dump(mode="json", exclude_none=True, exclude_unset=True)
 
@@ -79,10 +113,11 @@ def _run_parse_from_bytes(pdf_bytes: bytes) -> dict:
                 status_code=415, detail="Conteúdo não parece ser um PDF válido."
             )
 
-    # 1) Tenta abrir direto por bytes (se extractor aceitar bytes)
+    # 1) Tenta abrir direto por bytes
     try:
         return _parse_with_uc(pdf_bytes)
     except TypeError:
+        # Alguns extratores pedem caminho em disco: cairá no fallback abaixo
         pass
 
     # 2) Fallback Windows-safe: temp file delete=False + cleanup
@@ -140,3 +175,29 @@ def parse_pdf_base64(payload: ParseBase64Request):
         raise HTTPException(
             status_code=422, detail=f"Falha ao processar PDF (base64): {exc}"
         )
+
+
+@health_router.get("/health")
+def health() -> dict:
+    # opcional: importar versão da CLI para expor aqui também
+    try:
+        from ws_docflow.cli.app import __WS_DOCFLOW_VERSION__ as version
+    except Exception:
+        version = "unknown"
+    return {"status": "ok", "version": version}
+
+
+@health_router.get("/metrics")
+def metrics() -> Response:
+    if not HAS_PROM:
+        # Sem prometheus_client instalado
+        raise HTTPException(
+            status_code=501,
+            detail="Prometheus não habilitado. Instale 'prometheus-client' para /metrics.",
+        )
+    # Com prometheus: expõe o REGISTRY global e coletores padrão
+    registry = CollectorRegistry()
+    registry.register(PROCESS_COLLECTOR)
+    registry.register(PLATFORM_COLLECTOR)
+    data = generate_latest()  # do REGISTRY global
+    return Response(content=data, media_type=CONTENT_TYPE_LATEST)

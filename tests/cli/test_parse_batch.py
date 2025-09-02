@@ -60,7 +60,9 @@ def test_parse_batch_csv_out(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(ExtractDataUseCase, "run", fake_run)
 
     out_csv = tmp_path / "out.csv"
-    result = runner.invoke(app, ["parse-batch", str(d), "--format", "csv", "--out", str(out_csv)])
+    result = runner.invoke(
+        app, ["parse-batch", str(d), "--format", "csv", "--out", str(out_csv)]
+    )
     assert result.exit_code == 0, result.output
     assert out_csv.exists()
     content = out_csv.read_text(encoding="utf-8")

@@ -30,7 +30,7 @@ except Exception:
 app = typer.Typer(help="CLI do ws-docflow", no_args_is_help=True, add_completion=False)
 
 # Atualize via Commitizen
-__WS_DOCFLOW_VERSION__ = "0.4.1"
+__WS_DOCFLOW_VERSION__ = "0.9.0"
 
 
 def _version_callback(value: bool):

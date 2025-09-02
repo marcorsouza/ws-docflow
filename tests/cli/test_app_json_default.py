@@ -121,7 +121,11 @@ def test_to_csv_string_outputs_header_and_row(monkeypatch):
         "destino": {"unidade_local": {"codigo": "2222222", "descricao": "PORTO Y"}},
         "beneficiario": {"documento": "00.000.000/0001-00", "nome": "ACME"},
         "transportador": {"documento": "99.999.999/0001-99", "nome": "CARGAS"},
-        "totais_origem": {"tipo": "SERVICO", "valor_total_usd": 1.23, "valor_total_brl": 10.0},
+        "totais_origem": {
+            "tipo": "SERVICO",
+            "valor_total_usd": 1.23,
+            "valor_total_brl": 10.0,
+        },
     }
 
     csv_out = to_csv_string(payload)
