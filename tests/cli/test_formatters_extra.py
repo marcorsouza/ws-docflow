@@ -21,11 +21,19 @@ def test_to_json_string_serializes_decimal():
 
 def test_to_csv_string_and_flatten_headers():
     payload = {
-        "origem": {"unidade_local": {"codigo": "8765432", "descricao": "PORTO DE SANTOS"}},
-        "destino": {"unidade_local": {"codigo": "7654321", "descricao": "PORTO DE ITAJAÍ"}},
+        "origem": {
+            "unidade_local": {"codigo": "8765432", "descricao": "PORTO DE SANTOS"}
+        },
+        "destino": {
+            "unidade_local": {"codigo": "7654321", "descricao": "PORTO DE ITAJAÍ"}
+        },
         "beneficiario": {"documento": "11.222.333/0001-44", "nome": "COMPANHIA"},
         "transportador": {"documento": "55.666.777/0001-88", "nome": "NAVIOS"},
-        "totais_origem": {"tipo": "ARMAZENAMENTO", "valor_total_usd": 1.23, "valor_total_brl": 10.0},
+        "totais_origem": {
+            "tipo": "ARMAZENAMENTO",
+            "valor_total_usd": 1.23,
+            "valor_total_brl": 10.0,
+        },
     }
 
     # headers e linha achatada coerentes

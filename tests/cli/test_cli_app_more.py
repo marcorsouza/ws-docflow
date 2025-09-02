@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typer.testing import CliRunner
 
@@ -38,6 +37,7 @@ def test_parse_error_path_when_file_missing_and_uc_raises(monkeypatch):
             raise RuntimeError("boom")
 
     import ws_docflow.cli.app as app_mod
+
     app_mod.ExtractDataUseCase = lambda *a, **k: FakeUC()
 
     result = runner.invoke(cli.app, ["parse", "dummy.pdf"])
@@ -64,6 +64,7 @@ def test_parse_out_csv_file(monkeypatch, tmp_path: Path):
             return FakeDoc()
 
     import ws_docflow.cli.app as app_mod
+
     app_mod.ExtractDataUseCase = lambda *a, **k: FakeUC()
 
     out_csv = tmp_path / "saida.csv"

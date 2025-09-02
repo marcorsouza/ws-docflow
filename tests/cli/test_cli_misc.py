@@ -1,4 +1,3 @@
-
 # tests/cli/test_cli_misc.py
 from __future__ import annotations
 
@@ -22,9 +21,7 @@ def test_cli_invalid_format(monkeypatch):
 
 
 def test_cli_verbose_and_quiet_are_mutually_exclusive():
-    result = runner.invoke(
-        cli.app, ["parse", "dummy.pdf", "--verbose", "--quiet"]
-    )
+    result = runner.invoke(cli.app, ["parse", "dummy.pdf", "--verbose", "--quiet"])
     assert result.exit_code == 2
     # a mensagem vem do _set_level
     assert "Use apenas uma das flags" in (result.stdout + result.stderr)
