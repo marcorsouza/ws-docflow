@@ -15,7 +15,9 @@ import typer
 from ws_docflow.infra.pdf.pdfplumber_extractor import PdfPlumberExtractor
 from ws_docflow.infra.parsers.br_dta_parser import BrDtaParser
 from ws_docflow.infra.parsers.br_dta_extrato_parser import BrDtaExtratoParser
-from ws_docflow.core.use_cases.extract_data import ExtractDataUseCase  # símbolo local p/ patch via app_mod
+from ws_docflow.core.use_cases.extract_data import (
+    ExtractDataUseCase,
+)  # símbolo local p/ patch via app_mod
 
 # --- Logger (Rich) -----------------------------------------------------------
 try:
@@ -54,6 +56,7 @@ def _set_level(verbose: bool, quiet: bool) -> None:
 try:
     from ws_docflow.cli.formatters import to_json_string, to_csv_string  # type: ignore
 except Exception:
+
     def _json_default(o: Any) -> Any:
         if isinstance(o, Decimal):
             return float(o)
@@ -69,14 +72,30 @@ except Exception:
         transportador = payload.get("transportador", {}) or {}
         totais = payload.get("totais_origem", {}) or {}
         row: dict[str, Any] = {
-            "origem_unidade_local_codigo": (origem.get("unidade_local") or {}).get("codigo"),
-            "origem_unidade_local_descricao": (origem.get("unidade_local") or {}).get("descricao"),
-            "origem_recinto_codigo": (origem.get("recinto_aduaneiro") or {}).get("codigo"),
-            "origem_recinto_descricao": (origem.get("recinto_aduaneiro") or {}).get("descricao"),
-            "destino_unidade_local_codigo": (destino.get("unidade_local") or {}).get("codigo"),
-            "destino_unidade_local_descricao": (destino.get("unidade_local") or {}).get("descricao"),
-            "destino_recinto_codigo": (destino.get("recinto_aduaneiro") or {}).get("codigo"),
-            "destino_recinto_descricao": (destino.get("recinto_aduaneiro") or {}).get("descricao"),
+            "origem_unidade_local_codigo": (origem.get("unidade_local") or {}).get(
+                "codigo"
+            ),
+            "origem_unidade_local_descricao": (origem.get("unidade_local") or {}).get(
+                "descricao"
+            ),
+            "origem_recinto_codigo": (origem.get("recinto_aduaneiro") or {}).get(
+                "codigo"
+            ),
+            "origem_recinto_descricao": (origem.get("recinto_aduaneiro") or {}).get(
+                "descricao"
+            ),
+            "destino_unidade_local_codigo": (destino.get("unidade_local") or {}).get(
+                "codigo"
+            ),
+            "destino_unidade_local_descricao": (destino.get("unidade_local") or {}).get(
+                "descricao"
+            ),
+            "destino_recinto_codigo": (destino.get("recinto_aduaneiro") or {}).get(
+                "codigo"
+            ),
+            "destino_recinto_descricao": (destino.get("recinto_aduaneiro") or {}).get(
+                "descricao"
+            ),
             "beneficiario_documento": beneficiario.get("documento"),
             "beneficiario_nome": beneficiario.get("nome"),
             "transportador_documento": transportador.get("documento"),
@@ -94,13 +113,20 @@ except Exception:
         writer.writeheader()
         writer.writerow(row)
         return buf.getvalue()
+
+
 # -----------------------------------------------------------------------------------------------------
 
 
 @app.callback()
 def main(
     version: bool = typer.Option(
-        False, "--version", "-V", help="Mostra a versão", callback=_version_callback, is_eager=True
+        False,
+        "--version",
+        "-V",
+        help="Mostra a versão",
+        callback=_version_callback,
+        is_eager=True,
     ),
 ):
     pass
@@ -110,9 +136,15 @@ def main(
 def parse_cmd(
     pdf_path: str = typer.Argument(..., help="Caminho do arquivo PDF"),
     out: Optional[Path] = typer.Option(None, "--out", help="Arquivo de saída"),
-    fmt: str = typer.Option("json", "--format", help="Formato de saída (json|csv)", case_sensitive=False),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Aumenta verbosidade (DEBUG)"),
-    quiet: bool = typer.Option(False, "--quiet", "-q", help="Reduz verbosidade (WARNING)"),
+    fmt: str = typer.Option(
+        "json", "--format", help="Formato de saída (json|csv)", case_sensitive=False
+    ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Aumenta verbosidade (DEBUG)"
+    ),
+    quiet: bool = typer.Option(
+        False, "--quiet", "-q", help="Reduz verbosidade (WARNING)"
+    ),
 ):
     """
     Lê o PDF, extrai e tenta múltiplos parsers (Extrato → Clássico).
@@ -138,7 +170,10 @@ def parse_cmd(
         pdf_exists = Path(pdf_path).exists()
         if pdf_exists:
             # pega a classe fresca do core (respeita monkeypatch de método)
-            from ws_docflow.core.use_cases.extract_data import ExtractDataUseCase as CoreUC
+            from ws_docflow.core.use_cases.extract_data import (
+                ExtractDataUseCase as CoreUC,
+            )
+
             uc = CoreUC(extractor, parsers)
         else:
             # usa o símbolo do próprio módulo (permite override por atribuição via app_mod.ExtractDataUseCase = lambda...)
@@ -174,7 +209,9 @@ def parse_cmd(
 
         if out:
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(rendered, encoding="utf-8", newline="" if fmt == "csv" else None)
+            out.write_text(
+                rendered, encoding="utf-8", newline="" if fmt == "csv" else None
+            )
             typer.secho(f"Saída gravada em: {out}", fg=typer.colors.GREEN)
         else:
             typer.echo(rendered)

@@ -38,15 +38,29 @@ def flatten_for_csv(payload: dict[str, Any]) -> tuple[Iterable[str], dict[str, A
 
     row: dict[str, Any] = {
         # Origem
-        "origem_unidade_local_codigo": (origem.get("unidade_local") or {}).get("codigo"),
-        "origem_unidade_local_descricao": (origem.get("unidade_local") or {}).get("descricao"),
+        "origem_unidade_local_codigo": (origem.get("unidade_local") or {}).get(
+            "codigo"
+        ),
+        "origem_unidade_local_descricao": (origem.get("unidade_local") or {}).get(
+            "descricao"
+        ),
         "origem_recinto_codigo": (origem.get("recinto_aduaneiro") or {}).get("codigo"),
-        "origem_recinto_descricao": (origem.get("recinto_aduaneiro") or {}).get("descricao"),
+        "origem_recinto_descricao": (origem.get("recinto_aduaneiro") or {}).get(
+            "descricao"
+        ),
         # Destino
-        "destino_unidade_local_codigo": (destino.get("unidade_local") or {}).get("codigo"),
-        "destino_unidade_local_descricao": (destino.get("unidade_local") or {}).get("descricao"),
-        "destino_recinto_codigo": (destino.get("recinto_aduaneiro") or {}).get("codigo"),
-        "destino_recinto_descricao": (destino.get("recinto_aduaneiro") or {}).get("descricao"),
+        "destino_unidade_local_codigo": (destino.get("unidade_local") or {}).get(
+            "codigo"
+        ),
+        "destino_unidade_local_descricao": (destino.get("unidade_local") or {}).get(
+            "descricao"
+        ),
+        "destino_recinto_codigo": (destino.get("recinto_aduaneiro") or {}).get(
+            "codigo"
+        ),
+        "destino_recinto_descricao": (destino.get("recinto_aduaneiro") or {}).get(
+            "descricao"
+        ),
         # Participantes
         "beneficiario_documento": beneficiario.get("documento"),
         "beneficiario_nome": beneficiario.get("nome"),

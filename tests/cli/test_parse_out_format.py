@@ -23,6 +23,7 @@ def test_parse_json_tmpfile(tmp_path: Path, monkeypatch):
 
     # monkeypatch no módulo que é importado em app.py
     import ws_docflow.cli.app as app_mod
+
     app_mod.ExtractDataUseCase = lambda *a, **k: FakeUC()
 
     out_file = tmp_path / "res.json"
@@ -48,6 +49,7 @@ def test_parse_csv_stdout(monkeypatch):
             return FakeDoc()
 
     import ws_docflow.cli.app as app_mod
+
     app_mod.ExtractDataUseCase = lambda *a, **k: FakeUC()
 
     result = runner.invoke(app, ["parse", "dummy.pdf", "--format", "csv"])
